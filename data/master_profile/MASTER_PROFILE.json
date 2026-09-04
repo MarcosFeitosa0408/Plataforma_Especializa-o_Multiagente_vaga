@@ -1,0 +1,248 @@
+{
+  "schema_version": "1.0",
+  "candidate_id": "MARCOS_FEITOSA",
+
+  "candidate": {
+    "name": "Marcos Feitosa",
+    "location": {
+      "city": "São Paulo",
+      "state": "SP",
+      "country": "Brasil"
+    },
+
+    "employment_status": {
+      "currently_clt": false,
+      "actively_seeking": true,
+      "priority": "ALTA",
+      "primary_goal": "Conseguir oportunidade CLT na área de Dados"
+    },
+
+    "career_target": {
+      "primary_roles": [
+        "Analista de Dados",
+        "Analista de Dados Júnior",
+        "Analista de Dados I",
+        "Analista de BI",
+        "Analista de BI Júnior",
+        "Business Intelligence",
+        "Data Analytics"
+      ],
+
+      "secondary_roles": [
+        "Analista de Performance",
+        "Analista de Indicadores",
+        "Analista de Dados Comercial",
+        "Analista de Dados Operacionais",
+        "Analista de MIS",
+        "Analista de Reporting",
+        "Analista de Business Analytics",
+        "Analista de Planejamento e Dados",
+        "Analista de Inteligência de Mercado Júnior"
+      ],
+
+      "seniority": [
+        "Júnior",
+        "Analista I",
+        "Assistente"
+      ]
+    },
+
+    "work_preferences": {
+      "employment_type_priority": [
+        "CLT"
+      ],
+      "remote": true,
+      "hybrid": true,
+      "onsite": false,
+      "preferred_location": [
+        "São Paulo/SP"
+      ],
+      "relocation": false
+    }
+  },
+
+  "professional_positioning": {
+    "title": "Analista de Dados",
+    "summary": "Analista de Dados com experiência prática em Power BI, SQL, Excel, Power Query e Python, atuando no tratamento, transformação e análise de dados para geração de indicadores, dashboards e insights para apoio à tomada de decisão.",
+
+    "focus": [
+      "Data Analytics",
+      "Business Intelligence",
+      "Data Visualization",
+      "ETL",
+      "Data Quality",
+      "KPIs",
+      "Business Analytics"
+    ]
+  },
+
+  "education": [
+    {
+      "degree": "Análise e Desenvolvimento de Sistemas",
+      "institution": "Universidade Cidade de São Paulo - UNICID",
+      "status": "CONCLUIDO"
+    },
+    {
+      "degree": "MBA em Análise de Dados, Big Data e Business Intelligence",
+      "institution": "Universidade Cidade de São Paulo - UNICID",
+      "status": "CONCLUIDO"
+    }
+  ],
+
+  "skills": {
+    "core": [
+      "Power BI",
+      "SQL",
+      "Python",
+      "Excel",
+      "Power Query",
+      "DAX",
+      "ETL",
+      "Business Intelligence",
+      "Data Analytics",
+      "KPIs"
+    ],
+
+    "database": [
+      "SQL Server",
+      "T-SQL",
+      "Joins",
+      "Window Functions",
+      "Modelagem de Dados"
+    ],
+
+    "python": [
+      "Pandas",
+      "NumPy"
+    ],
+
+    "analytics": [
+      "EDA",
+      "Business Analytics",
+      "Data Visualization",
+      "Storytelling com Dados",
+      "Data Quality",
+      "Data Cleaning"
+    ],
+
+    "tools": [
+      "Git",
+      "GitHub",
+      "Looker Studio"
+    ],
+
+    "automation": [
+      "Automação de Relatórios",
+      "IA aplicada a dados"
+    ]
+  },
+
+  "experience": [
+    {
+      "company": "Nerdcell",
+      "role": "Analista de Dados",
+      "employment_type": "Autônomo",
+      "start": "2025-03",
+      "current": true,
+      "location": "São Paulo/SP",
+      "work_model": "Híbrido",
+
+      "technologies": [
+        "Power BI",
+        "SQL",
+        "Excel",
+        "Power Query",
+        "Python"
+      ],
+
+      "responsibilities": [
+        "Análise de dados",
+        "Business Intelligence",
+        "Data Analytics",
+        "ETL",
+        "Tratamento e transformação de dados",
+        "KPIs",
+        "Dashboards",
+        "Análise de vendas",
+        "Análise de estoque",
+        "Análise operacional",
+        "Data Quality"
+      ],
+
+      "achievements": [
+        {
+          "metric": "dashboards",
+          "value": 4,
+          "description": "Dashboards interativos desenvolvidos em Power BI"
+        },
+        {
+          "metric": "kpis",
+          "value": 18,
+          "description": "KPIs utilizados para acompanhamento da operação"
+        },
+        {
+          "metric": "units",
+          "value": 8,
+          "description": "Unidades acompanhadas"
+        },
+        {
+          "metric": "sales_growth",
+          "value": 15,
+          "unit": "%",
+          "approximate": true,
+          "period": "3 meses",
+          "description": "Crescimento aproximado nas vendas após análises que subsidiaram ações de promoção e otimização de estoque"
+        }
+      ]
+    }
+  ],
+
+  "projects": [
+    {
+      "name": "EDAP - Enterprise Data Analytics Platform",
+      "description": "Solução em Python para avaliação da qualidade dos dados antes da utilização em BI, Analytics ou Inteligência Artificial.",
+      "technologies": [
+        "Python",
+        "Data Quality",
+        "Analytics",
+        "Automação"
+      ]
+    },
+
+    {
+      "name": "Plataforma de Dashboards Automatizados",
+      "context": "Projeto Nerdcell",
+      "description": "Plataforma de dashboards desenvolvida com Python e IA para processamento, geração de indicadores e visualização analítica.",
+      "technologies": [
+        "Python",
+        "IA",
+        "Dashboards",
+        "Data Analytics"
+      ],
+      "authorized_for_portfolio": true
+    }
+  ],
+
+  "languages": {
+    "portuguese": "NATIVO",
+    "english": "INTERMEDIARIO"
+  },
+
+  "portfolio": {
+    "portfolio_url": "https://marcosfeitosa0408.github.io/portfolio/",
+    "github_url": "https://github.com/MarcosFeitosa0408",
+    "linkedin_url": "https://www.linkedin.com/in/marcosfeitosa-analista/"
+  },
+
+  "evidence_policy": {
+    "master_profile_is_source_of_truth": true,
+    "never_invent_skill": true,
+    "never_invent_experience": true,
+    "never_invent_education": true,
+    "never_invent_certification": true,
+    "never_invent_result": true,
+    "never_invent_salary": true,
+    "never_invent_job": true,
+    "unknown_value": "NAO_IDENTIFICADO"
+  }
+}
