@@ -86,3 +86,35 @@ def test_personalize_job():
 
     assert "Apache Spark" not in data["personalization"]["selected_skills"]
     assert "apache spark" in data["personalization"]["unsupported_requirements"]
+
+
+def test_prepare_application():
+    response = client.post(
+        "/prepare-application",
+        json={
+            "job_id": "api-prepare-001",
+            "title": "Analista de Dados Júnior",
+            "company": "Empresa Teste",
+            "source": "API",
+            "location": "São Paulo",
+            "work_model": "HYBRID",
+            "employment_type": "CLT",
+            "description": "Vaga para análise de dados.",
+            "requirements": [
+                "Power BI",
+                "SQL",
+                "Excel",
+                "Python",
+                "DAX",
+            ],
+            "desirable_requirements": [],
+        },
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["application"]["approved_for_human_review"] is True
+    assert data["application"]["decision"] == "PENDING_HUMAN_APPROVAL"
+    assert data["application"]["ready_to_apply"] is False
