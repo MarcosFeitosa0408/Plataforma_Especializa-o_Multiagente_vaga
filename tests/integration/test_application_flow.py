@@ -72,3 +72,41 @@ def test_human_approval_makes_application_ready():
 
     assert approved.decision == ApplicationDecision.APPROVED_BY_HUMAN
     assert approved.ready_to_apply is True
+
+
+def test_orchestrator_starts_tracking_after_human_approval():
+    from core.schemas.job import JobOpportunity, WorkModel
+
+    orchestrator = JobOrchestrator()
+
+    job = JobOpportunity(
+        job_id="job-tracking-001",
+        title="Analista de Dados Júnior",
+        company="Empresa Teste",
+        source="TESTE",
+        location="São Paulo",
+        work_model=WorkModel.HYBRID,
+        requirements=[
+            "Power BI",
+            "SQL",
+            "Python",
+            "Excel",
+        ],
+    )
+
+    qualification = orchestrator.run([job])[0]
+
+    preparation = orchestrator.prepare_application(
+        job,
+        qualification,
+    )
+
+    approved = orchestrator.approve_application(preparation)
+
+    tracking = orchestrator.start_tracking(approved)
+
+    assert tracking.job_id == "job-tracking-001"
+    assert tracking.current_status.value == "READY_TO_APPLY"
+    assert len(tracking.history) == 1
+
+

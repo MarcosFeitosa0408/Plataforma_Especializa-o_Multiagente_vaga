@@ -3,6 +3,7 @@ from agents.agent_01_discovery.discovery_agent import DiscoveryAgent
 from agents.agent_02_qualification.qualification_agent import QualificationAgent
 from agents.agent_03_personalization.personalization_agent import PersonalizationAgent
 from agents.agent_04_application.application_agent import ApplicationAgent
+from agents.agent_05_tracking.tracking_agent import TrackingAgent
 from core.schemas.application import ApplicationPreparation
 from core.schemas.job import JobOpportunity
 from core.schemas.personalization import PersonalizationResult
@@ -20,6 +21,7 @@ class JobOrchestrator:
         self.personalization_agent = PersonalizationAgent()
         self.validation_gate = ValidationGate()
         self.application_agent = ApplicationAgent()
+        self.tracking_agent = TrackingAgent()
 
     def run(
         self,
@@ -102,3 +104,17 @@ class JobOrchestrator:
         """Registra a rejeição humana da candidatura."""
 
         return self.application_agent.reject(preparation)
+    def start_tracking(
+        self,
+        preparation: ApplicationPreparation,
+    ):
+        """Inicia o acompanhamento de uma candidatura pronta."""
+
+        if not preparation.ready_to_apply:
+            raise ValueError(
+                "A candidatura precisa estar pronta antes do acompanhamento."
+            )
+
+        return self.tracking_agent.start_tracking(
+            job_id=preparation.job_id,
+        )
