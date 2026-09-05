@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 
 from core.orchestrator.orchestrator import JobOrchestrator
-from core.schemas.api import JobAnalysisRequest
+from core.schemas.api import ApplicationDecisionRequest, JobAnalysisRequest
 from core.schemas.job import JobOpportunity
 
 
@@ -96,3 +96,19 @@ def prepare_application(request: JobAnalysisRequest):
         "qualification": qualification,
         "application": preparation,
     }
+@app.post("/approve-application")
+def approve_application(request: ApplicationDecisionRequest):
+    approved = orchestrator.approve_application(
+        request.application
+    )
+
+    return approved
+
+
+@app.post("/reject-application")
+def reject_application(request: ApplicationDecisionRequest):
+    rejected = orchestrator.reject_application(
+        request.application
+    )
+
+    return rejected

@@ -118,3 +118,49 @@ def test_prepare_application():
     assert data["application"]["approved_for_human_review"] is True
     assert data["application"]["decision"] == "PENDING_HUMAN_APPROVAL"
     assert data["application"]["ready_to_apply"] is False
+
+
+def test_approve_application():
+    response = client.post(
+        "/approve-application",
+        json={
+            "application": {
+                "job_id": "api-approve-001",
+                "approved_for_human_review": True,
+                "decision": "PENDING_HUMAN_APPROVAL",
+                "ready_to_apply": False,
+                "blocking_issues": [],
+                "warnings": [],
+            }
+        },
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["decision"] == "APPROVED_BY_HUMAN"
+    assert data["ready_to_apply"] is True
+
+
+def test_reject_application():
+    response = client.post(
+        "/reject-application",
+        json={
+            "application": {
+                "job_id": "api-reject-001",
+                "approved_for_human_review": True,
+                "decision": "PENDING_HUMAN_APPROVAL",
+                "ready_to_apply": False,
+                "blocking_issues": [],
+                "warnings": [],
+            }
+        },
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["decision"] == "REJECTED_BY_HUMAN"
+    assert data["ready_to_apply"] is False

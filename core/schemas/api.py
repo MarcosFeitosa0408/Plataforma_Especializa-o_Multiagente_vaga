@@ -18,3 +18,12 @@ class JobAnalysisRequest(StrictModel):
     description: str = ""
     requirements: list[str] = Field(default_factory=list)
     desirable_requirements: list[str] = Field(default_factory=list)
+
+
+from core.schemas.application import ApplicationPreparation
+
+
+class ApplicationDecisionRequest(StrictModel):
+    """Recebe uma candidatura preparada para decisão humana."""
+
+    application: ApplicationPreparation
