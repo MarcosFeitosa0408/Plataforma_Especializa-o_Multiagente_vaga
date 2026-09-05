@@ -2,19 +2,24 @@ from agents.agent_00_memory.memory_agent import MemoryAgent
 from agents.agent_01_discovery.discovery_agent import DiscoveryAgent
 from agents.agent_02_qualification.qualification_agent import QualificationAgent
 from agents.agent_03_personalization.personalization_agent import PersonalizationAgent
+from agents.agent_04_application.application_agent import ApplicationAgent
+from core.schemas.application import ApplicationPreparation
 from core.schemas.job import JobOpportunity
 from core.schemas.personalization import PersonalizationResult
 from core.schemas.qualification import QualificationResult
+from core.validation.validation_gate import ValidationGate
 
 
 class JobOrchestrator:
-    """Coordena o pipeline inicial de vagas."""
+    """Coordena o pipeline de análise e preparação de candidaturas."""
 
     def __init__(self) -> None:
         self.memory_agent = MemoryAgent()
         self.discovery_agent = DiscoveryAgent()
         self.qualification_agent = QualificationAgent()
         self.personalization_agent = PersonalizationAgent()
+        self.validation_gate = ValidationGate()
+        self.application_agent = ApplicationAgent()
 
     def run(
         self,
@@ -49,4 +54,35 @@ class JobOrchestrator:
             job,
             profile,
             qualification,
+        )
+
+    def prepare_application(
+        self,
+        job: JobOpportunity,
+        qualification: QualificationResult,
+    ) -> ApplicationPreparation:
+        """
+        Personaliza, valida e prepara a candidatura.
+
+        Mesmo quando aprovada pela Validation Gate, a candidatura
+        permanece aguardando aprovação humana.
+        """
+
+        personalization = self.personalize_job(
+            job,
+            qualification,
+        )
+
+        validation = self.validation_gate.validate(
+            qualification,
+            personalization,
+        )
+
+        return self.application_agent.prepare(
+            job_id=job.job_id,
+            approved_for_human_review=validation[
+                "approved_for_human_review"
+            ],
+            blocking_issues=validation["blocking_issues"],
+            warnings=validation["warnings"],
         )

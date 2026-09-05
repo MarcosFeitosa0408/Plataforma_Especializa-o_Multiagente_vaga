@@ -1,0 +1,39 @@
+from core.orchestrator.orchestrator import JobOrchestrator
+from core.schemas.application import ApplicationDecision
+from core.schemas.job import JobOpportunity, WorkModel
+
+
+def test_orchestrator_prepares_application_for_human_approval():
+    orchestrator = JobOrchestrator()
+
+    job = JobOpportunity(
+        job_id="application-flow-001",
+        title="Analista de Dados Júnior",
+        company="Empresa Teste",
+        source="TEST",
+        location="São Paulo",
+        work_model=WorkModel.HYBRID,
+        employment_type="CLT",
+        description="Vaga para análise de dados.",
+        requirements=[
+            "Power BI",
+            "SQL",
+            "Excel",
+            "Python",
+            "DAX",
+        ],
+    )
+
+    qualification = orchestrator.run([job])[0]
+
+    preparation = orchestrator.prepare_application(
+        job,
+        qualification,
+    )
+
+    assert preparation.approved_for_human_review is True
+    assert preparation.decision == (
+        ApplicationDecision.PENDING_HUMAN_APPROVAL
+    )
+    assert preparation.ready_to_apply is False
+    assert preparation.blocking_issues == []
