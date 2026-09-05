@@ -86,3 +86,19 @@ class JobOrchestrator:
             blocking_issues=validation["blocking_issues"],
             warnings=validation["warnings"],
         )
+
+    def approve_application(
+        self,
+        preparation: ApplicationPreparation,
+    ) -> ApplicationPreparation:
+        """Registra a aprovação humana da candidatura."""
+
+        return self.application_agent.approve(preparation)
+
+    def reject_application(
+        self,
+        preparation: ApplicationPreparation,
+    ) -> ApplicationPreparation:
+        """Registra a rejeição humana da candidatura."""
+
+        return self.application_agent.reject(preparation)

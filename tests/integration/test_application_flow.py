@@ -37,3 +37,38 @@ def test_orchestrator_prepares_application_for_human_approval():
     )
     assert preparation.ready_to_apply is False
     assert preparation.blocking_issues == []
+
+
+def test_human_approval_makes_application_ready():
+    orchestrator = JobOrchestrator()
+
+    job = JobOpportunity(
+        job_id="human-approval-001",
+        title="Analista de Dados Júnior",
+        company="Empresa Teste",
+        source="TEST",
+        location="São Paulo",
+        work_model=WorkModel.HYBRID,
+        employment_type="CLT",
+        requirements=[
+            "Power BI",
+            "SQL",
+            "Excel",
+            "Python",
+            "DAX",
+        ],
+    )
+
+    qualification = orchestrator.run([job])[0]
+
+    preparation = orchestrator.prepare_application(
+        job,
+        qualification,
+    )
+
+    assert preparation.ready_to_apply is False
+
+    approved = orchestrator.approve_application(preparation)
+
+    assert approved.decision == ApplicationDecision.APPROVED_BY_HUMAN
+    assert approved.ready_to_apply is True
