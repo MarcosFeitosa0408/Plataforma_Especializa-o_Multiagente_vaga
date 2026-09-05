@@ -40,3 +40,31 @@ def analyze_job(request: JobAnalysisRequest):
     result = orchestrator.run([job])[0]
 
     return result
+
+
+@app.post("/personalize-job")
+def personalize_job(request: JobAnalysisRequest):
+    job = JobOpportunity(
+        job_id=request.job_id,
+        title=request.title,
+        company=request.company,
+        source=request.source,
+        location=request.location,
+        work_model=request.work_model,
+        employment_type=request.employment_type,
+        description=request.description,
+        requirements=request.requirements,
+        desirable_requirements=request.desirable_requirements,
+    )
+
+    qualification = orchestrator.run([job])[0]
+
+    personalization = orchestrator.personalize_job(
+        job,
+        qualification,
+    )
+
+    return {
+        "qualification": qualification,
+        "personalization": personalization,
+    }

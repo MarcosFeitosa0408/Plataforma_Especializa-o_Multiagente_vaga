@@ -48,3 +48,41 @@ def test_analyze_job():
     assert data["fit_score"] >= 7.0
     assert "power bi" in data["matched_skills"]
     assert "sql" in data["matched_skills"]
+
+
+def test_personalize_job():
+    payload = {
+        "job_id": "teste-personalize-001",
+        "title": "Analista de Dados Júnior",
+        "company": "Empresa Teste",
+        "source": "API",
+        "location": "São Paulo",
+        "work_model": "HYBRID",
+        "employment_type": "CLT",
+        "description": "Vaga para análise de dados.",
+        "requirements": [
+            "Power BI",
+            "SQL",
+            "Python",
+            "Excel",
+            "DAX",
+            "Apache Spark",
+        ],
+        "desirable_requirements": [],
+    }
+
+    response = client.post("/personalize-job", json=payload)
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["qualification"]["job_id"] == "teste-personalize-001"
+    assert data["personalization"]["job_id"] == "teste-personalize-001"
+    assert data["personalization"]["evidence_verified"] is True
+
+    assert "Power BI" in data["personalization"]["selected_skills"]
+    assert "SQL" in data["personalization"]["selected_skills"]
+
+    assert "Apache Spark" not in data["personalization"]["selected_skills"]
+    assert "apache spark" in data["personalization"]["unsupported_requirements"]
