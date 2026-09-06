@@ -4,6 +4,7 @@ from core.orchestrator.orchestrator import JobOrchestrator
 from core.schemas.api import (
     ApplicationDecisionRequest,
     JobAnalysisRequest,
+    JobApplicationCreateRequest,
     TrackingStatusUpdateRequest,
 )
 from core.schemas.job import JobOpportunity
@@ -127,3 +128,19 @@ def update_tracking_status(request: TrackingStatusUpdateRequest):
     )
 
     return updated
+
+
+@app.post("/job-applications")
+def create_job_application(
+    request: JobApplicationCreateRequest,
+):
+    application = orchestrator.create_job_application(
+        job=request.job,
+        application_id=request.application_id,
+    )
+
+    saved_application = orchestrator.save_job_application(
+        application
+    )
+
+    return saved_application
