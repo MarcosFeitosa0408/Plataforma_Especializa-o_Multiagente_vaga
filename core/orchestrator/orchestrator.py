@@ -179,3 +179,25 @@ class JobOrchestrator:
             application_id=application_id,
             job=job,
         )
+
+
+    def qualify_job_application(
+        self,
+        application: JobApplicationObject,
+    ) -> JobApplicationObject:
+        """Calcula a qualificação e atualiza o objeto central."""
+
+        profile = self.memory_agent.get_profile()
+
+        qualification = self.qualification_agent.calculate_fit(
+            application.job,
+            profile,
+        )
+
+        return application.model_copy(
+            update={
+                "qualification": qualification,
+            }
+        )
+
+
