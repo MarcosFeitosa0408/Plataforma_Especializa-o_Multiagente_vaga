@@ -264,3 +264,25 @@ class JobOrchestrator:
         )
 
 
+    def approve_job_application(
+        self,
+        application: JobApplicationObject,
+    ) -> JobApplicationObject:
+        """Registra a aprovação humana no objeto central."""
+
+        if application.preparation is None:
+            raise ValueError(
+                "A candidatura precisa estar preparada antes da aprovação."
+            )
+
+        approved_preparation = self.application_agent.approve(
+            application.preparation
+        )
+
+        return application.model_copy(
+            update={
+                "preparation": approved_preparation,
+            }
+        )
+
+
