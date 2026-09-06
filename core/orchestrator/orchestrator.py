@@ -201,3 +201,29 @@ class JobOrchestrator:
         )
 
 
+    def personalize_job_application(
+        self,
+        application: JobApplicationObject,
+    ) -> JobApplicationObject:
+        """Personaliza a candidatura e atualiza o objeto central."""
+
+        if application.qualification is None:
+            raise ValueError(
+                "A candidatura precisa estar qualificada antes da personalização."
+            )
+
+        profile = self.memory_agent.get_profile()
+
+        personalization = self.personalization_agent.personalize(
+            application.job,
+            profile,
+            application.qualification,
+        )
+
+        return application.model_copy(
+            update={
+                "personalization": personalization,
+            }
+        )
+
+
