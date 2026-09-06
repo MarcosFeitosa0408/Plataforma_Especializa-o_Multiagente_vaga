@@ -151,3 +151,29 @@ def test_orchestrator_updates_tracking_to_applied():
     assert updated.history[-1].note == "Candidatura enviada."
 
 
+def test_orchestrator_checks_followup_eligibility():
+    from datetime import datetime, timedelta, timezone
+
+    from core.schemas.job import JobStatus
+    from core.schemas.tracking import ApplicationTracking
+
+    orchestrator = JobOrchestrator()
+
+    now = datetime.now(timezone.utc)
+    last_contact = now - timedelta(days=5)
+
+    tracking = ApplicationTracking(
+        job_id="followup-integration-001",
+        current_status=JobStatus.APPLIED,
+    )
+
+    result = orchestrator.should_follow_up(
+        tracking=tracking,
+        followup_count=0,
+        last_contact_at=last_contact,
+        now=now,
+    )
+
+    assert result is True
+
+
