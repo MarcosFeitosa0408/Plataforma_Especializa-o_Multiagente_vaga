@@ -118,3 +118,17 @@ class JobOrchestrator:
         return self.tracking_agent.start_tracking(
             job_id=preparation.job_id,
         )
+
+    def update_tracking_status(
+        self,
+        tracking,
+        new_status,
+        note: str = "",
+    ):
+        """Atualiza o status de uma candidatura em acompanhamento."""
+
+        return self.tracking_agent.update_status(
+            tracking,
+            new_status,
+            note,
+        )
