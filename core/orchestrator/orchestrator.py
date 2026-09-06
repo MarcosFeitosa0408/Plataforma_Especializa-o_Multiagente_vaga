@@ -19,14 +19,14 @@ class JobOrchestrator:
 
     def __init__(self) -> None:
         self.memory_agent = MemoryAgent()
-self.discovery_agent = DiscoveryAgent()
-self.qualification_agent = QualificationAgent()
-self.personalization_agent = PersonalizationAgent()
-self.validation_gate = ValidationGate()
-self.application_agent = ApplicationAgent()
-self.tracking_agent = TrackingAgent()
-self.followup_agent = FollowUpAgent()
-self.optimization_agent = OptimizationAgent()
+        self.discovery_agent = DiscoveryAgent()
+        self.qualification_agent = QualificationAgent()
+        self.personalization_agent = PersonalizationAgent()
+        self.validation_gate = ValidationGate()
+        self.application_agent = ApplicationAgent()
+        self.tracking_agent = TrackingAgent()
+        self.followup_agent = FollowUpAgent()
+        self.optimization_agent = OptimizationAgent()
 
     def run(
         self,
