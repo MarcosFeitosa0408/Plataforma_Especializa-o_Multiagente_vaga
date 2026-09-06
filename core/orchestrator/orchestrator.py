@@ -313,3 +313,29 @@ class JobOrchestrator:
         )
 
 
+    def update_job_application_status(
+        self,
+        application: JobApplicationObject,
+        new_status,
+        note: str = "",
+    ) -> JobApplicationObject:
+        """Atualiza o status de acompanhamento no objeto central."""
+
+        if application.tracking is None:
+            raise ValueError(
+                "A candidatura precisa estar em acompanhamento antes da atualização."
+            )
+
+        updated_tracking = self.tracking_agent.update_status(
+            application.tracking,
+            new_status,
+            note,
+        )
+
+        return application.model_copy(
+            update={
+                "tracking": updated_tracking,
+            }
+        )
+
+
