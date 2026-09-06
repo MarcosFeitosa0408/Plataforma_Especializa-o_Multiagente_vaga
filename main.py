@@ -144,3 +144,20 @@ def create_job_application(
     )
 
     return saved_application
+
+
+@app.get("/job-applications/{application_id}")
+def get_job_application(application_id: str):
+    application = orchestrator.get_job_application(
+        application_id
+    )
+
+    if application is None:
+        return {
+            "error": "Candidatura não encontrada.",
+            "application_id": application_id,
+        }
+
+    return application
+
+
