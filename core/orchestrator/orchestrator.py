@@ -361,3 +361,22 @@ class JobOrchestrator:
         )
 
 
+    def calculate_job_application_metrics(
+        self,
+        applications: list[JobApplicationObject],
+    ) -> dict:
+        """Calcula métricas usando o tracking dos objetos centrais."""
+
+        trackings = [
+            application.tracking
+            for application in applications
+            if application.tracking is not None
+        ]
+
+        return self.optimization_agent.calculate_metrics(
+            trackings
+        )
+
+
+
+
