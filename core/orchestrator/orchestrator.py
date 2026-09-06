@@ -1,10 +1,12 @@
-from agents.agent_06_followup.followup_agent import FollowUpAgent
 from agents.agent_00_memory.memory_agent import MemoryAgent
 from agents.agent_01_discovery.discovery_agent import DiscoveryAgent
 from agents.agent_02_qualification.qualification_agent import QualificationAgent
 from agents.agent_03_personalization.personalization_agent import PersonalizationAgent
 from agents.agent_04_application.application_agent import ApplicationAgent
 from agents.agent_05_tracking.tracking_agent import TrackingAgent
+from agents.agent_06_followup.followup_agent import FollowUpAgent
+from agents.agent_07_optimization.optimization_agent import OptimizationAgent
+
 from core.schemas.application import ApplicationPreparation
 from core.schemas.job import JobOpportunity
 from core.schemas.personalization import PersonalizationResult
@@ -17,13 +19,14 @@ class JobOrchestrator:
 
     def __init__(self) -> None:
         self.memory_agent = MemoryAgent()
-        self.discovery_agent = DiscoveryAgent()
-        self.qualification_agent = QualificationAgent()
-        self.personalization_agent = PersonalizationAgent()
-        self.validation_gate = ValidationGate()
-        self.application_agent = ApplicationAgent()
-        self.tracking_agent = TrackingAgent()
-        self.followup_agent = FollowUpAgent()
+self.discovery_agent = DiscoveryAgent()
+self.qualification_agent = QualificationAgent()
+self.personalization_agent = PersonalizationAgent()
+self.validation_gate = ValidationGate()
+self.application_agent = ApplicationAgent()
+self.tracking_agent = TrackingAgent()
+self.followup_agent = FollowUpAgent()
+self.optimization_agent = OptimizationAgent()
 
     def run(
         self,
@@ -150,4 +153,15 @@ class JobOrchestrator:
             followup_count=followup_count,
             last_contact_at=last_contact_at,
             now=now,
+        )
+
+
+    def calculate_optimization_metrics(
+        self,
+        applications,
+    ) -> dict:
+        """Calcula métricas reais do funil de candidaturas."""
+
+        return self.optimization_agent.calculate_metrics(
+            applications
         )
