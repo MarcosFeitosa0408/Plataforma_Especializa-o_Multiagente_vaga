@@ -237,3 +237,46 @@ def test_create_job_application():
     assert data["personalization"] is None
     assert data["preparation"] is None
     assert data["tracking"] is None
+
+def test_get_job_application():
+    create_payload = {
+        "application_id": "api-get-001",
+        "job": {
+            "job_id": "api-get-job-001",
+            "title": "Analista de Dados Júnior",
+            "company": "Empresa Teste",
+            "source": "API",
+        },
+    }
+
+    create_response = client.post(
+        "/job-applications",
+        json=create_payload,
+    )
+
+    assert create_response.status_code == 200
+
+    response = client.get(
+        "/job-applications/api-get-001"
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["application_id"] == "api-get-001"
+    assert data["job"]["job_id"] == "api-get-job-001"
+    assert data["job"]["title"] == "Analista de Dados Júnior"
+
+
+def test_get_unknown_job_application():
+    response = client.get(
+        "/job-applications/api-inexistente-001"
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["error"] == "Candidatura não encontrada."
+    assert data["application_id"] == "api-inexistente-001"
