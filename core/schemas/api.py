@@ -21,9 +21,21 @@ class JobAnalysisRequest(StrictModel):
 
 
 from core.schemas.application import ApplicationPreparation
+from core.schemas.job import JobStatus
+from core.schemas.tracking import ApplicationTracking
 
 
 class ApplicationDecisionRequest(StrictModel):
     """Recebe uma candidatura preparada para decisão humana."""
 
     application: ApplicationPreparation
+
+
+class TrackingStatusUpdateRequest(StrictModel):
+    """Recebe a atualização de status de uma candidatura."""
+
+    tracking: ApplicationTracking
+    new_status: JobStatus
+    note: str = ""
+
+
