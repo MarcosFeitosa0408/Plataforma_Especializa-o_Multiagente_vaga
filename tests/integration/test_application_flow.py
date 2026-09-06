@@ -280,5 +280,37 @@ def test_central_job_application_flow_until_applied():
     assert application.tracking.history[-1].note == "Candidatura enviada."
 
 
+def test_orchestrator_saves_gets_and_lists_job_application():
+    from core.schemas.job import JobOpportunity
+
+    orchestrator = JobOrchestrator()
+
+    job = JobOpportunity(
+        job_id="repository-integration-job-001",
+        title="Analista de Dados Júnior",
+        company="Empresa Teste",
+        source="TESTE",
+    )
+
+    application = orchestrator.create_job_application(
+        job=job,
+        application_id="repository-integration-001",
+    )
+
+    orchestrator.save_job_application(application)
+
+    saved = orchestrator.get_job_application(
+        "repository-integration-001"
+    )
+
+    applications = orchestrator.list_job_applications()
+
+    assert saved is not None
+    assert saved.application_id == "repository-integration-001"
+    assert saved.job.job_id == "repository-integration-job-001"
+    assert len(applications) == 1
+    assert applications[0].application_id == "repository-integration-001"
+
+
 
 
