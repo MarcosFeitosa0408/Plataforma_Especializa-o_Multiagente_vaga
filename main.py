@@ -1,7 +1,11 @@
 from fastapi import FastAPI
 
 from core.orchestrator.orchestrator import JobOrchestrator
-from core.schemas.api import ApplicationDecisionRequest, JobAnalysisRequest
+from core.schemas.api import (
+    ApplicationDecisionRequest,
+    JobAnalysisRequest,
+    TrackingStatusUpdateRequest,
+)
 from core.schemas.job import JobOpportunity
 
 
@@ -112,3 +116,14 @@ def reject_application(request: ApplicationDecisionRequest):
     )
 
     return rejected
+
+
+@app.post("/update-tracking-status")
+def update_tracking_status(request: TrackingStatusUpdateRequest):
+    updated = orchestrator.update_tracking_status(
+        request.tracking,
+        request.new_status,
+        request.note,
+    )
+
+    return updated
