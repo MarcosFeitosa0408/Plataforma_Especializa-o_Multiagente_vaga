@@ -1,3 +1,6 @@
+from core.repositories.job_application_repository import (
+    JobApplicationRepository,
+)
 from core.schemas.job_application import JobApplicationObject
 from agents.agent_00_memory.memory_agent import MemoryAgent
 from agents.agent_01_discovery.discovery_agent import DiscoveryAgent
@@ -28,6 +31,7 @@ class JobOrchestrator:
         self.tracking_agent = TrackingAgent()
         self.followup_agent = FollowUpAgent()
         self.optimization_agent = OptimizationAgent()
+        self.job_application_repository = JobApplicationRepository()
 
     def run(
         self,
@@ -376,6 +380,34 @@ class JobOrchestrator:
         return self.optimization_agent.calculate_metrics(
             trackings
         )
+
+
+    def save_job_application(
+        self,
+        application: JobApplicationObject,
+    ) -> JobApplicationObject:
+        """Salva ou atualiza uma candidatura no repositório."""
+
+        return self.job_application_repository.save(
+            application
+        )
+
+    def get_job_application(
+        self,
+        application_id: str,
+    ) -> JobApplicationObject | None:
+        """Busca uma candidatura pelo application_id."""
+
+        return self.job_application_repository.get(
+            application_id
+        )
+
+    def list_job_applications(
+        self,
+    ) -> list[JobApplicationObject]:
+        """Lista todas as candidaturas armazenadas."""
+
+        return self.job_application_repository.list_all()
 
 
 
