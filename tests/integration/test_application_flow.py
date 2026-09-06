@@ -177,3 +177,47 @@ def test_orchestrator_checks_followup_eligibility():
     assert result is True
 
 
+def test_orchestrator_calculates_optimization_metrics():
+    from core.schemas.job import JobStatus
+    from core.schemas.tracking import ApplicationTracking, TrackingEvent
+
+    orchestrator = JobOrchestrator()
+
+    tracking = ApplicationTracking(
+        job_id="optimization-integration-001",
+        current_status=JobStatus.REJECTED,
+        history=[
+            TrackingEvent(
+                status=JobStatus.APPLIED,
+                note="Candidatura enviada.",
+            ),
+            TrackingEvent(
+                status=JobStatus.SCREENING,
+                note="Triagem iniciada.",
+            ),
+            TrackingEvent(
+                status=JobStatus.INTERVIEW,
+                note="Entrevista realizada.",
+            ),
+            TrackingEvent(
+                status=JobStatus.REJECTED,
+                note="Processo encerrado.",
+            ),
+        ],
+    )
+
+    metrics = orchestrator.calculate_optimization_metrics(
+        [tracking]
+    )
+
+    assert metrics["total_applications"] == 1
+    assert metrics["screening_or_beyond"] == 1
+    assert metrics["interviews"] == 1
+    assert metrics["offers"] == 0
+    assert metrics["hires"] == 0
+    assert metrics["rejections"] == 1
+    assert metrics["interview_rate"] == 100.0
+
+
+
+
