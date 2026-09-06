@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 
 from core.orchestrator.orchestrator import JobOrchestrator
 from core.schemas.api import (
@@ -153,10 +153,13 @@ def get_job_application(application_id: str):
     )
 
     if application is None:
-        return {
-            "error": "Candidatura não encontrada.",
+    raise HTTPException(
+        status_code=404,
+        detail={
+            "message": "Candidatura não encontrada.",
             "application_id": application_id,
-        }
+        },
+    )
 
     return application
 
