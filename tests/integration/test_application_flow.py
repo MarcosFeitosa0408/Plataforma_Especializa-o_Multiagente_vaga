@@ -219,5 +219,66 @@ def test_orchestrator_calculates_optimization_metrics():
     assert metrics["interview_rate"] == 100.0
 
 
+def test_central_job_application_flow_until_applied():
+    from core.schemas.job import JobOpportunity, JobStatus, WorkModel
+
+    orchestrator = JobOrchestrator()
+
+    job = JobOpportunity(
+        job_id="central-flow-001",
+        title="Analista de Dados Júnior",
+        company="Empresa Teste",
+        source="TESTE",
+        location="São Paulo",
+        work_model=WorkModel.HYBRID,
+        requirements=[
+            "Power BI",
+            "SQL",
+            "Python",
+            "Excel",
+        ],
+    )
+
+    application = orchestrator.create_job_application(
+        job=job,
+        application_id="application-central-001",
+    )
+
+    application = orchestrator.qualify_job_application(
+        application
+    )
+
+    application = orchestrator.personalize_job_application(
+        application
+    )
+
+    application = orchestrator.prepare_job_application(
+        application
+    )
+
+    application = orchestrator.approve_job_application(
+        application
+    )
+
+    application = orchestrator.start_job_application_tracking(
+        application
+    )
+
+    application = orchestrator.update_job_application_status(
+        application,
+        JobStatus.APPLIED,
+        note="Candidatura enviada.",
+    )
+
+    assert application.qualification is not None
+    assert application.personalization is not None
+    assert application.preparation is not None
+    assert application.preparation.ready_to_apply is True
+    assert application.tracking is not None
+    assert application.tracking.current_status == JobStatus.APPLIED
+    assert application.tracking.history[-1].status == JobStatus.APPLIED
+    assert application.tracking.history[-1].note == "Candidatura enviada."
+
+
 
 
