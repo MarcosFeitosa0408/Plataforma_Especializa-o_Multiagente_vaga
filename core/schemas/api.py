@@ -1,6 +1,6 @@
 from pydantic import Field
 
-from core.schemas.job import StrictModel, WorkModel
+from core.schemas.job import JobOpportunity, StrictModel, WorkModel
 
 
 class JobAnalysisRequest(StrictModel):
@@ -37,5 +37,10 @@ class TrackingStatusUpdateRequest(StrictModel):
     tracking: ApplicationTracking
     new_status: JobStatus
     note: str = ""
+
+
+class JobApplicationCreateRequest(StrictModel):
+    application_id: str = Field(min_length=1)
+    job: JobOpportunity
 
 
