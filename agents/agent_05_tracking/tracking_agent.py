@@ -5,7 +5,7 @@ from core.schemas.tracking import ApplicationTracking, TrackingEvent
 class TrackingAgent:
     """Registra e acompanha a evolução de uma candidatura."""
 
-        ALLOWED_TRANSITIONS = {
+    ALLOWED_TRANSITIONS = {
         JobStatus.READY_TO_APPLY: {
             JobStatus.APPLIED,
             JobStatus.WITHDRAWN,
