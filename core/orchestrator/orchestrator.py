@@ -339,3 +339,25 @@ class JobOrchestrator:
         )
 
 
+    def should_follow_up_job_application(
+        self,
+        application: JobApplicationObject,
+        followup_count: int,
+        last_contact_at,
+        now=None,
+    ) -> bool:
+        """Verifica se o objeto central está apto para follow-up."""
+
+        if application.tracking is None:
+            raise ValueError(
+                "A candidatura precisa estar em acompanhamento antes do follow-up."
+            )
+
+        return self.followup_agent.should_follow_up(
+            tracking=application.tracking,
+            followup_count=followup_count,
+            last_contact_at=last_contact_at,
+            now=now,
+        )
+
+
