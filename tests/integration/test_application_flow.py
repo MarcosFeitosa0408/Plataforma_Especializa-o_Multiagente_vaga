@@ -109,4 +109,45 @@ def test_orchestrator_starts_tracking_after_human_approval():
     assert tracking.current_status.value == "READY_TO_APPLY"
     assert len(tracking.history) == 1
 
+def test_orchestrator_updates_tracking_to_applied():
+    from core.schemas.job import JobOpportunity, JobStatus, WorkModel
+
+    orchestrator = JobOrchestrator()
+
+    job = JobOpportunity(
+        job_id="job-tracking-002",
+        title="Analista de Dados Júnior",
+        company="Empresa Teste",
+        source="TESTE",
+        location="São Paulo",
+        work_model=WorkModel.HYBRID,
+        requirements=[
+            "Power BI",
+            "SQL",
+            "Python",
+            "Excel",
+        ],
+    )
+
+    qualification = orchestrator.run([job])[0]
+
+    preparation = orchestrator.prepare_application(
+        job,
+        qualification,
+    )
+
+    approved = orchestrator.approve_application(preparation)
+    tracking = orchestrator.start_tracking(approved)
+
+    updated = orchestrator.update_tracking_status(
+        tracking,
+        JobStatus.APPLIED,
+        note="Candidatura enviada.",
+    )
+
+    assert updated.current_status == JobStatus.APPLIED
+    assert len(updated.history) == 2
+    assert updated.history[-1].status == JobStatus.APPLIED
+    assert updated.history[-1].note == "Candidatura enviada."
+
 
