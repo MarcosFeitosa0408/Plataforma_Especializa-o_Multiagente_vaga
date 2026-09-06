@@ -196,3 +196,44 @@ def test_update_tracking_status():
     assert len(data["history"]) == 2
     assert data["history"][-1]["status"] == "APPLIED"
     assert data["history"][-1]["note"] == "Candidatura enviada."
+
+
+def test_create_job_application():
+    payload = {
+        "application_id": "api-application-001",
+        "job": {
+            "job_id": "api-job-001",
+            "title": "Analista de Dados Júnior",
+            "company": "Empresa Teste",
+            "source": "API",
+            "location": "São Paulo",
+            "work_model": "HYBRID",
+            "employment_type": "CLT",
+            "description": "Vaga para análise de dados.",
+            "requirements": [
+                "Power BI",
+                "SQL",
+                "Python",
+                "Excel",
+            ],
+            "desirable_requirements": [],
+        },
+    }
+
+    response = client.post(
+        "/job-applications",
+        json=payload,
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["application_id"] == "api-application-001"
+    assert data["job"]["job_id"] == "api-job-001"
+    assert data["job"]["title"] == "Analista de Dados Júnior"
+
+    assert data["qualification"] is None
+    assert data["personalization"] is None
+    assert data["preparation"] is None
+    assert data["tracking"] is None
