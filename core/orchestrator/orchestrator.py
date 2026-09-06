@@ -227,3 +227,40 @@ class JobOrchestrator:
         )
 
 
+    def prepare_job_application(
+        self,
+        application: JobApplicationObject,
+    ) -> JobApplicationObject:
+        """Valida e prepara o objeto central para aprovação humana."""
+
+        if application.qualification is None:
+            raise ValueError(
+                "A candidatura precisa estar qualificada antes da preparação."
+            )
+
+        if application.personalization is None:
+            raise ValueError(
+                "A candidatura precisa estar personalizada antes da preparação."
+            )
+
+        validation = self.validation_gate.validate(
+            application.qualification,
+            application.personalization,
+        )
+
+        preparation = self.application_agent.prepare(
+            job_id=application.job.job_id,
+            approved_for_human_review=validation[
+                "approved_for_human_review"
+            ],
+            blocking_issues=validation["blocking_issues"],
+            warnings=validation["warnings"],
+        )
+
+        return application.model_copy(
+            update={
+                "preparation": preparation,
+            }
+        )
+
+
