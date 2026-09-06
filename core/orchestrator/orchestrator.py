@@ -1,3 +1,4 @@
+from core.schemas.job_application import JobApplicationObject
 from agents.agent_00_memory.memory_agent import MemoryAgent
 from agents.agent_01_discovery.discovery_agent import DiscoveryAgent
 from agents.agent_02_qualification.qualification_agent import QualificationAgent
@@ -164,4 +165,17 @@ class JobOrchestrator:
 
         return self.optimization_agent.calculate_metrics(
             applications
+        )
+
+
+    def create_job_application(
+        self,
+        job: JobOpportunity,
+        application_id: str,
+    ) -> JobApplicationObject:
+        """Cria o objeto central de uma oportunidade no pipeline."""
+
+        return JobApplicationObject(
+            application_id=application_id,
+            job=job,
         )
