@@ -274,9 +274,12 @@ def test_get_unknown_job_application():
         "/job-applications/api-inexistente-001"
     )
 
-    assert response.status_code == 200
+    assert response.status_code == 404
 
     data = response.json()
 
-    assert data["error"] == "Candidatura não encontrada."
-    assert data["application_id"] == "api-inexistente-001"
+    assert data["detail"]["message"] == "Candidatura não encontrada."
+    assert (
+        data["detail"]["application_id"]
+        == "api-inexistente-001"
+    )
