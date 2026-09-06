@@ -286,3 +286,30 @@ class JobOrchestrator:
         )
 
 
+    def start_job_application_tracking(
+        self,
+        application: JobApplicationObject,
+    ) -> JobApplicationObject:
+        """Inicia o acompanhamento da candidatura aprovada."""
+
+        if application.preparation is None:
+            raise ValueError(
+                "A candidatura precisa estar preparada antes do acompanhamento."
+            )
+
+        if not application.preparation.ready_to_apply:
+            raise ValueError(
+                "A candidatura precisa estar aprovada antes do acompanhamento."
+            )
+
+        tracking = self.tracking_agent.start_tracking(
+            job_id=application.job.job_id,
+        )
+
+        return application.model_copy(
+            update={
+                "tracking": tracking,
+            }
+        )
+
+
