@@ -153,14 +153,13 @@ def get_job_application(application_id: str):
     )
 
     if application is None:
-    raise HTTPException(
-        status_code=404,
-        detail={
-            "message": "Candidatura não encontrada.",
-            "application_id": application_id,
-        },
-    )
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "message": "Candidatura não encontrada.",
+                "application_id": application_id,
+            },
+        )
 
     return application
-
 
