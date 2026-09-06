@@ -164,3 +164,35 @@ def test_reject_application():
 
     assert data["decision"] == "REJECTED_BY_HUMAN"
     assert data["ready_to_apply"] is False
+
+
+def test_update_tracking_status():
+    payload = {
+        "tracking": {
+            "job_id": "api-tracking-001",
+            "current_status": "READY_TO_APPLY",
+            "history": [
+                {
+                    "status": "READY_TO_APPLY",
+                    "note": "Acompanhamento da candidatura iniciado.",
+                }
+            ],
+        },
+        "new_status": "APPLIED",
+        "note": "Candidatura enviada.",
+    }
+
+    response = client.post(
+        "/update-tracking-status",
+        json=payload,
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["job_id"] == "api-tracking-001"
+    assert data["current_status"] == "APPLIED"
+    assert len(data["history"]) == 2
+    assert data["history"][-1]["status"] == "APPLIED"
+    assert data["history"][-1]["note"] == "Candidatura enviada."
