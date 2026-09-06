@@ -1,3 +1,4 @@
+from agents.agent_06_followup.followup_agent import FollowUpAgent
 from agents.agent_00_memory.memory_agent import MemoryAgent
 from agents.agent_01_discovery.discovery_agent import DiscoveryAgent
 from agents.agent_02_qualification.qualification_agent import QualificationAgent
@@ -22,6 +23,7 @@ class JobOrchestrator:
         self.validation_gate = ValidationGate()
         self.application_agent = ApplicationAgent()
         self.tracking_agent = TrackingAgent()
+        self.followup_agent = FollowUpAgent()
 
     def run(
         self,
@@ -131,4 +133,21 @@ class JobOrchestrator:
             tracking,
             new_status,
             note,
+        )
+
+
+    def should_follow_up(
+        self,
+        tracking,
+        followup_count: int,
+        last_contact_at,
+        now=None,
+    ) -> bool:
+        """Verifica se uma candidatura está apta para follow-up."""
+
+        return self.followup_agent.should_follow_up(
+            tracking=tracking,
+            followup_count=followup_count,
+            last_contact_at=last_contact_at,
+            now=now,
         )
