@@ -1,8 +1,8 @@
 from core.schemas.job_application import JobApplicationObject
 
 
-class JobApplicationRepository:
-    """Armazena e recupera candidaturas durante a execução da aplicação."""
+class InMemoryJobApplicationRepository:
+    """Armazena candidaturas em memória durante a execução da aplicação."""
 
     def __init__(self) -> None:
         self._applications: dict[str, JobApplicationObject] = {}
