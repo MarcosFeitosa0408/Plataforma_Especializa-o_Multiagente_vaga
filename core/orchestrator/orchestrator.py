@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from core.repositories.job_application_repository import (
     JobApplicationRepository,
 )
@@ -33,6 +34,22 @@ class JobOrchestrator:
         self.optimization_agent = OptimizationAgent()
         self.job_application_repository = JobApplicationRepository()
 
+
+    def _update_job_application(
+        self,
+        application: JobApplicationObject,
+        **updates,
+    ) -> JobApplicationObject:
+        """Atualiza o objeto central e renova o timestamp de modificação."""
+
+        return application.model_copy(
+            update={
+                **updates,
+                "updated_at": datetime.now(timezone.utc),
+            }
+        )
+
+    
     def run(
         self,
         jobs: list[JobOpportunity],
@@ -207,10 +224,9 @@ class JobOrchestrator:
             profile,
         )
 
-        return application.model_copy(
-            update={
-                "qualification": qualification,
-            }
+        return self._update_job_application(
+             application,
+             qualification=qualification,
         )
 
 
@@ -233,10 +249,9 @@ class JobOrchestrator:
             application.qualification,
         )
 
-        return application.model_copy(
-            update={
-                "personalization": personalization,
-            }
+        return self._update_job_application(
+             application,
+             personalization=personalization,
         )
 
 
@@ -270,10 +285,9 @@ class JobOrchestrator:
             warnings=validation["warnings"],
         )
 
-        return application.model_copy(
-            update={
-                "preparation": preparation,
-            }
+        return self._update_job_application(
+            application,
+            preparation=preparation,
         )
 
 
@@ -292,10 +306,9 @@ class JobOrchestrator:
             application.preparation
         )
 
-        return application.model_copy(
-            update={
-                "preparation": approved_preparation,
-            }
+        return self._update_job_application(
+            application,
+            preparation=approved_preparation,
         )
 
     def reject_job_application(
@@ -313,10 +326,9 @@ class JobOrchestrator:
             application.preparation
         )
 
-        return application.model_copy(
-            update={
-                "preparation": rejected_preparation,
-            }
+        return self._update_job_application(
+            application,
+            preparation=rejected_preparation,
         )
 
 
@@ -340,10 +352,9 @@ class JobOrchestrator:
             job_id=application.job.job_id,
         )
 
-        return application.model_copy(
-            update={
-                "tracking": tracking,
-            }
+        return self._update_job_application(
+            application,
+            tracking=tracking,
         )
 
 
@@ -366,10 +377,9 @@ class JobOrchestrator:
             note,
         )
 
-        return application.model_copy(
-            update={
-                "tracking": updated_tracking,
-            }
+        return self._update_job_application(
+            application,
+            tracking=updated_tracking,
         )
 
 
