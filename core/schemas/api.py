@@ -39,6 +39,13 @@ class TrackingStatusUpdateRequest(StrictModel):
     note: str = ""
 
 
+class StoredTrackingStatusUpdateRequest(StrictModel):
+    """Recebe a atualização de status de uma candidatura armazenada."""
+
+    new_status: JobStatus
+    note: str = ""
+
+
 class JobApplicationCreateRequest(StrictModel):
     application_id: str = Field(min_length=1)
     job: JobOpportunity
