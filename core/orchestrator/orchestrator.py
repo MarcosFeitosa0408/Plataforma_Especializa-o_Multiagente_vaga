@@ -290,6 +290,28 @@ class JobOrchestrator:
         )
 
 
+        def reject_job_application(
+        self,
+        application: JobApplicationObject,
+    ) -> JobApplicationObject:
+        """Registra a rejeição humana no objeto central."""
+
+        if application.preparation is None:
+            raise ValueError(
+                "A candidatura precisa estar preparada antes da rejeição."
+            )
+
+        rejected_preparation = self.application_agent.reject(
+            application.preparation
+        )
+
+        return application.model_copy(
+            update={
+                "preparation": rejected_preparation,
+            }
+        )
+
+
     def start_job_application_tracking(
         self,
         application: JobApplicationObject,
