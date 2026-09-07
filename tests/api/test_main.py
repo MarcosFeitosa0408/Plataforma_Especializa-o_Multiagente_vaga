@@ -1025,3 +1025,67 @@ def test_get_job_application_metrics():
     assert metrics["response_rate"] > 0
 
 
+def test_invalid_tracking_transition_returns_http_400():
+    application_payload = {
+        "application_id": "api-invalid-transition-001",
+        "job": {
+            "job_id": "job-invalid-transition-001",
+            "title": "Analista de Dados Júnior",
+            "company": "Empresa Teste",
+            "source": "Teste API",
+            "location": "São Paulo",
+            "work_model": "HYBRID",
+            "employment_type": "CLT",
+            "description": "Vaga de teste para validar erro de regra de negócio.",
+            "requirements": [
+                "Power BI",
+                "SQL",
+                "Python",
+                "Excel",
+            ],
+            "desirable_requirements": [],
+        },
+    }
+
+    create_response = client.post(
+        "/job-applications",
+        json=application_payload,
+    )
+    assert create_response.status_code == 200
+
+    assert client.post(
+        "/job-applications/api-invalid-transition-001/qualify"
+    ).status_code == 200
+
+    assert client.post(
+        "/job-applications/api-invalid-transition-001/personalize"
+    ).status_code == 200
+
+    assert client.post(
+        "/job-applications/api-invalid-transition-001/prepare"
+    ).status_code == 200
+
+    assert client.post(
+        "/job-applications/api-invalid-transition-001/approve"
+    ).status_code == 200
+
+    assert client.post(
+        "/job-applications/api-invalid-transition-001/tracking/start"
+    ).status_code == 200
+
+    invalid_response = client.post(
+        "/job-applications/api-invalid-transition-001/tracking/status",
+        json={
+            "new_status": "SCREENING",
+            "note": "Tentativa proposital de transição inválida.",
+        },
+    )
+
+    assert invalid_response.status_code == 400
+
+    error = invalid_response.json()
+
+    assert error["error"] == "business_rule_violation"
+    assert "Transição inválida" in error["message"]
+
+
