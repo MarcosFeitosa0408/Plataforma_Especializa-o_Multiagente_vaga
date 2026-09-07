@@ -553,3 +553,149 @@ def test_prepare_stored_job_application():
     )
 
 
+def test_approve_stored_job_application():
+    create_payload = {
+        "application_id": "api-approve-stored-001",
+        "job": {
+            "job_id": "api-approve-stored-job-001",
+            "title": "Analista de Dados Júnior",
+            "company": "Empresa Teste",
+            "source": "API",
+            "location": "São Paulo",
+            "work_model": "HYBRID",
+            "employment_type": "CLT",
+            "description": "Vaga para análise de dados.",
+            "requirements": [
+                "Power BI",
+                "SQL",
+                "Python",
+                "Excel",
+                "DAX",
+            ],
+            "desirable_requirements": [],
+        },
+    }
+
+    create_response = client.post(
+        "/job-applications",
+        json=create_payload,
+    )
+    assert create_response.status_code == 200
+
+    qualify_response = client.post(
+        "/job-applications/api-approve-stored-001/qualify"
+    )
+    assert qualify_response.status_code == 200
+
+    personalize_response = client.post(
+        "/job-applications/api-approve-stored-001/personalize"
+    )
+    assert personalize_response.status_code == 200
+
+    prepare_response = client.post(
+        "/job-applications/api-approve-stored-001/prepare"
+    )
+    assert prepare_response.status_code == 200
+
+    approve_response = client.post(
+        "/job-applications/api-approve-stored-001/approve"
+    )
+
+    assert approve_response.status_code == 200
+
+    approved_data = approve_response.json()
+
+    assert (
+        approved_data["preparation"]["decision"]
+        == "APPROVED_BY_HUMAN"
+    )
+    assert approved_data["preparation"]["ready_to_apply"] is True
+
+    get_response = client.get(
+        "/job-applications/api-approve-stored-001"
+    )
+
+    assert get_response.status_code == 200
+
+    saved_data = get_response.json()
+
+    assert (
+        saved_data["preparation"]["decision"]
+        == "APPROVED_BY_HUMAN"
+    )
+    assert saved_data["preparation"]["ready_to_apply"] is True
+
+
+def test_reject_stored_job_application():
+    create_payload = {
+        "application_id": "api-reject-stored-001",
+        "job": {
+            "job_id": "api-reject-stored-job-001",
+            "title": "Analista de Dados Júnior",
+            "company": "Empresa Teste",
+            "source": "API",
+            "location": "São Paulo",
+            "work_model": "HYBRID",
+            "employment_type": "CLT",
+            "description": "Vaga para análise de dados.",
+            "requirements": [
+                "Power BI",
+                "SQL",
+                "Python",
+                "Excel",
+                "DAX",
+            ],
+            "desirable_requirements": [],
+        },
+    }
+
+    create_response = client.post(
+        "/job-applications",
+        json=create_payload,
+    )
+    assert create_response.status_code == 200
+
+    qualify_response = client.post(
+        "/job-applications/api-reject-stored-001/qualify"
+    )
+    assert qualify_response.status_code == 200
+
+    personalize_response = client.post(
+        "/job-applications/api-reject-stored-001/personalize"
+    )
+    assert personalize_response.status_code == 200
+
+    prepare_response = client.post(
+        "/job-applications/api-reject-stored-001/prepare"
+    )
+    assert prepare_response.status_code == 200
+
+    reject_response = client.post(
+        "/job-applications/api-reject-stored-001/reject"
+    )
+
+    assert reject_response.status_code == 200
+
+    rejected_data = reject_response.json()
+
+    assert (
+        rejected_data["preparation"]["decision"]
+        == "REJECTED_BY_HUMAN"
+    )
+    assert rejected_data["preparation"]["ready_to_apply"] is False
+
+    get_response = client.get(
+        "/job-applications/api-reject-stored-001"
+    )
+
+    assert get_response.status_code == 200
+
+    saved_data = get_response.json()
+
+    assert (
+        saved_data["preparation"]["decision"]
+        == "REJECTED_BY_HUMAN"
+    )
+    assert saved_data["preparation"]["ready_to_apply"] is False
+
+
