@@ -146,6 +146,11 @@ def create_job_application(
     return saved_application
 
 
+@app.get("/job-applications")
+def list_job_applications():
+    return orchestrator.list_job_applications()
+
+
 @app.get("/job-applications/{application_id}")
 def get_job_application(application_id: str):
     application = orchestrator.get_job_application(
