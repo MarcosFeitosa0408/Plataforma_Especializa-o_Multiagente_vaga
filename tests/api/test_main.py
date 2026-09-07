@@ -860,3 +860,84 @@ def test_update_tracking_status_stored_job_application():
     assert stored_data["tracking"]["current_status"] == "APPLIED"
 
 
+def test_check_follow_up_stored_job_application():
+    application_payload = {
+        "application_id": "api-follow-up-check-001",
+        "job": {
+            "job_id": "job-follow-up-check-001",
+            "title": "Analista de Dados Júnior",
+            "company": "Empresa Teste",
+            "source": "Teste API",
+            "location": "São Paulo",
+            "work_model": "HYBRID",
+            "employment_type": "CLT",
+            "description": "Vaga de teste para verificação de follow-up.",
+            "requirements": [
+                "Power BI",
+                "SQL",
+                "Python",
+                "Excel",
+            ],
+            "desirable_requirements": [],
+        },
+    }
+
+    create_response = client.post(
+        "/job-applications",
+        json=application_payload,
+    )
+    assert create_response.status_code == 200
+
+    qualify_response = client.post(
+        "/job-applications/api-follow-up-check-001/qualify"
+    )
+    assert qualify_response.status_code == 200
+
+    personalize_response = client.post(
+        "/job-applications/api-follow-up-check-001/personalize"
+    )
+    assert personalize_response.status_code == 200
+
+    prepare_response = client.post(
+        "/job-applications/api-follow-up-check-001/prepare"
+    )
+    assert prepare_response.status_code == 200
+
+    approve_response = client.post(
+        "/job-applications/api-follow-up-check-001/approve"
+    )
+    assert approve_response.status_code == 200
+
+    tracking_response = client.post(
+        "/job-applications/api-follow-up-check-001/tracking/start"
+    )
+    assert tracking_response.status_code == 200
+
+    status_response = client.post(
+        "/job-applications/api-follow-up-check-001/tracking/status",
+        json={
+            "new_status": "APPLIED",
+            "note": "Candidatura enviada.",
+        },
+    )
+    assert status_response.status_code == 200
+
+    follow_up_response = client.post(
+        "/job-applications/api-follow-up-check-001/follow-up/check",
+        params={
+            "followup_count": 0,
+            "last_contact_at": "2020-01-01T00:00:00+00:00",
+        },
+    )
+
+    assert follow_up_response.status_code == 200
+
+    follow_up_data = follow_up_response.json()
+
+    assert (
+        follow_up_data["application_id"]
+        == "api-follow-up-check-001"
+    )
+    assert follow_up_data["should_follow_up"] is True
+
+
