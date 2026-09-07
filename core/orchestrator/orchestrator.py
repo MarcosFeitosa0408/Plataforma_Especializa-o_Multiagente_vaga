@@ -99,21 +99,29 @@ class JobOrchestrator:
             warnings=validation["warnings"],
         )
 
-    def approve_application(
+
+        def approve_application(
         self,
         preparation: ApplicationPreparation,
     ) -> ApplicationPreparation:
-        """Registra a aprovação humana da candidatura."""
+        """Registra a aprovação humana de uma candidatura preparada."""
 
-        return self.application_agent.approve(preparation)
+        return self.application_agent.approve(
+            preparation
+        )
+
 
     def reject_application(
         self,
         preparation: ApplicationPreparation,
     ) -> ApplicationPreparation:
-        """Registra a rejeição humana da candidatura."""
+        """Registra a rejeição humana de uma candidatura preparada."""
 
-        return self.application_agent.reject(preparation)
+        return self.application_agent.reject(
+            preparation
+        )
+
+
     def start_tracking(
         self,
         preparation: ApplicationPreparation,
@@ -129,6 +137,7 @@ class JobOrchestrator:
             job_id=preparation.job_id,
         )
 
+
     def update_tracking_status(
         self,
         tracking,
@@ -142,7 +151,7 @@ class JobOrchestrator:
             new_status,
             note,
         )
-
+        
 
     def should_follow_up(
         self,
@@ -268,7 +277,7 @@ class JobOrchestrator:
         )
 
 
-            def approve_job_application(
+    def approve_job_application(
         self,
         application: JobApplicationObject,
     ) -> JobApplicationObject:
