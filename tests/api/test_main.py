@@ -780,3 +780,83 @@ def test_start_tracking_stored_job_application():
     )
 
 
+def test_update_tracking_status_stored_job_application():
+    application_payload = {
+        "application_id": "api-tracking-status-001",
+        "job": {
+            "job_id": "job-tracking-status-001",
+            "title": "Analista de Dados Júnior",
+            "company": "Empresa Teste",
+            "source": "Teste API",
+            "location": "São Paulo",
+            "work_model": "HYBRID",
+            "employment_type": "CLT",
+            "description": "Vaga de teste para atualização de tracking.",
+            "requirements": [
+                "Power BI",
+                "SQL",
+                "Python",
+                "Excel",
+            ],
+            "desirable_requirements": [],
+        },
+    }
+
+    create_response = client.post(
+        "/job-applications",
+        json=application_payload,
+    )
+    assert create_response.status_code == 200
+
+    qualify_response = client.post(
+        "/job-applications/api-tracking-status-001/qualify"
+    )
+    assert qualify_response.status_code == 200
+
+    personalize_response = client.post(
+        "/job-applications/api-tracking-status-001/personalize"
+    )
+    assert personalize_response.status_code == 200
+
+    prepare_response = client.post(
+        "/job-applications/api-tracking-status-001/prepare"
+    )
+    assert prepare_response.status_code == 200
+
+    approve_response = client.post(
+        "/job-applications/api-tracking-status-001/approve"
+    )
+    assert approve_response.status_code == 200
+
+    tracking_response = client.post(
+        "/job-applications/api-tracking-status-001/tracking/start"
+    )
+    assert tracking_response.status_code == 200
+
+    status_response = client.post(
+        "/job-applications/api-tracking-status-001/tracking/status",
+        json={
+            "new_status": "SCREENING",
+            "note": "Candidatura avançou para triagem.",
+        },
+    )
+
+    assert status_response.status_code == 200
+
+    status_data = status_response.json()
+
+    assert status_data["tracking"] is not None
+    assert status_data["tracking"]["status"] == "SCREENING"
+
+    stored_response = client.get(
+        "/job-applications/api-tracking-status-001"
+    )
+
+    assert stored_response.status_code == 200
+
+    stored_data = stored_response.json()
+
+    assert stored_data["tracking"] is not None
+    assert stored_data["tracking"]["status"] == "SCREENING"
+
+
