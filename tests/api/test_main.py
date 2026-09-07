@@ -334,3 +334,58 @@ def test_list_job_applications():
     assert "api-list-002" in application_ids
 
 
+def test_qualify_stored_job_application():
+    create_payload = {
+        "application_id": "api-qualify-001",
+        "job": {
+            "job_id": "api-qualify-job-001",
+            "title": "Analista de Dados Júnior",
+            "company": "Empresa Teste",
+            "source": "API",
+            "location": "São Paulo",
+            "work_model": "HYBRID",
+            "employment_type": "CLT",
+            "description": "Vaga para análise de dados.",
+            "requirements": [
+                "Power BI",
+                "SQL",
+                "Python",
+                "Excel",
+                "DAX",
+            ],
+            "desirable_requirements": [],
+        },
+    }
+
+    create_response = client.post(
+        "/job-applications",
+        json=create_payload,
+    )
+
+    assert create_response.status_code == 200
+
+    qualify_response = client.post(
+        "/job-applications/api-qualify-001/qualify"
+    )
+
+    assert qualify_response.status_code == 200
+
+    qualified_data = qualify_response.json()
+
+    assert qualified_data["application_id"] == "api-qualify-001"
+    assert qualified_data["qualification"] is not None
+    assert qualified_data["qualification"]["job_id"] == "api-qualify-job-001"
+    assert qualified_data["qualification"]["fit_score"] >= 7.0
+
+    get_response = client.get(
+        "/job-applications/api-qualify-001"
+    )
+
+    assert get_response.status_code == 200
+
+    saved_data = get_response.json()
+
+    assert saved_data["qualification"] is not None
+    assert saved_data["qualification"]["job_id"] == "api-qualify-job-001"
+
+
