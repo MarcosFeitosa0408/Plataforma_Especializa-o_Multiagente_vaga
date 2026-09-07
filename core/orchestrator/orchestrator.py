@@ -100,7 +100,7 @@ class JobOrchestrator:
         )
 
 
-        def approve_application(
+    def approve_application(
         self,
         preparation: ApplicationPreparation,
     ) -> ApplicationPreparation:
