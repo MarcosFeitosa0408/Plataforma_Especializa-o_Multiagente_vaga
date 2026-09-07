@@ -1,5 +1,8 @@
-from fastapi import FastAPI, HTTPException
 from datetime import datetime
+
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
+
 from core.orchestrator.orchestrator import JobOrchestrator
 from core.schemas.api import (
     ApplicationDecisionRequest,
@@ -16,11 +19,28 @@ app = FastAPI(
     version="0.2.0",
 )
 
+
 orchestrator = JobOrchestrator()
+
+
+@app.exception_handler(ValueError)
+async def value_error_handler(
+    request: Request,
+    exc: ValueError,
+):
+    return JSONResponse(
+        status_code=400,
+        content={
+            "error": "business_rule_violation",
+            "message": str(exc),
+        },
+    )
 
 
 @app.get("/health")
 def health_check():
+
+
     return {
         "status": "ok",
         "service": "multiagent-job-platform",
