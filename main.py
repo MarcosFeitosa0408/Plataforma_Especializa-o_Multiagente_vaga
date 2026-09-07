@@ -370,3 +370,36 @@ def update_stored_job_application_status(
 
     return saved_application
 
+
+@app.post("/job-applications/{application_id}/follow-up/check")
+def check_stored_job_application_follow_up(
+    application_id: str,
+    followup_count: int,
+    last_contact_at: str,
+):
+    application = orchestrator.get_job_application(
+        application_id
+    )
+
+    if application is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "message": "Candidatura não encontrada.",
+                "application_id": application_id,
+            },
+        )
+
+    should_follow_up = (
+        orchestrator.should_follow_up_job_application(
+            application=application,
+            followup_count=followup_count,
+            last_contact_at=last_contact_at,
+        )
+    )
+
+    return {
+        "application_id": application_id,
+        "should_follow_up": should_follow_up,
+    }
+
