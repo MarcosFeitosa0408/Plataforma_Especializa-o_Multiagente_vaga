@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from core.repositories.job_application_repository import (
-    JobApplicationRepository,
+    InMemoryJobApplicationRepository,
 )
 from core.schemas.job_application import JobApplicationObject
 from agents.agent_00_memory.memory_agent import MemoryAgent
@@ -32,7 +32,7 @@ class JobOrchestrator:
         self.tracking_agent = TrackingAgent()
         self.followup_agent = FollowUpAgent()
         self.optimization_agent = OptimizationAgent()
-        self.job_application_repository = JobApplicationRepository()
+        self.job_application_repository = InMemoryJobApplicationRepository()
 
 
     def _update_job_application(
