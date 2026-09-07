@@ -1,5 +1,5 @@
 from core.repositories.job_application_repository import (
-    JobApplicationRepository,
+    InMemoryJobApplicationRepository,
 )
 from core.schemas.job import JobOpportunity
 from core.schemas.job_application import JobApplicationObject
@@ -23,7 +23,7 @@ def build_application(
 
 
 def test_repository_saves_and_gets_application():
-    repository = JobApplicationRepository()
+    repository = InMemoryJobApplicationRepository()
 
     application = build_application(
         application_id="repository-001",
@@ -40,7 +40,7 @@ def test_repository_saves_and_gets_application():
 
 
 def test_repository_lists_all_applications():
-    repository = JobApplicationRepository()
+    repository = InMemoryJobApplicationRepository()
 
     repository.save(
         build_application(
@@ -62,7 +62,7 @@ def test_repository_lists_all_applications():
 
 
 def test_repository_updates_existing_application():
-    repository = JobApplicationRepository()
+    repository = InMemoryJobApplicationRepository()
 
     application = build_application(
         application_id="repository-004",
@@ -86,7 +86,7 @@ def test_repository_updates_existing_application():
 
 
 def test_repository_deletes_application():
-    repository = JobApplicationRepository()
+    repository = InMemoryJobApplicationRepository()
 
     application = build_application(
         application_id="repository-005",
@@ -103,7 +103,7 @@ def test_repository_deletes_application():
 
 
 def test_repository_returns_false_when_deleting_unknown_application():
-    repository = JobApplicationRepository()
+    repository = InMemoryJobApplicationRepository()
 
     deleted = repository.delete("repository-inexistente")
 
