@@ -1089,3 +1089,47 @@ def test_invalid_tracking_transition_returns_http_400():
     assert "Transição inválida" in error["message"]
 
 
+def test_job_application_updated_at_changes_after_update():
+    application_payload = {
+        "application_id": "api-updated-at-001",
+        "job": {
+            "job_id": "job-updated-at-001",
+            "title": "Analista de Dados Júnior",
+            "company": "Empresa Teste",
+            "source": "Teste API",
+            "location": "São Paulo",
+            "work_model": "HYBRID",
+            "employment_type": "CLT",
+            "description": "Vaga de teste para validar updated_at.",
+            "requirements": [
+                "Power BI",
+                "SQL",
+                "Python",
+                "Excel",
+            ],
+            "desirable_requirements": [],
+        },
+    }
+
+    create_response = client.post(
+        "/job-applications",
+        json=application_payload,
+    )
+    assert create_response.status_code == 200
+
+    created_application = create_response.json()
+
+    original_created_at = created_application["created_at"]
+    original_updated_at = created_application["updated_at"]
+
+    qualify_response = client.post(
+        "/job-applications/api-updated-at-001/qualify"
+    )
+    assert qualify_response.status_code == 200
+
+    updated_application = qualify_response.json()
+
+    assert updated_application["created_at"] == original_created_at
+    assert updated_application["updated_at"] != original_updated_at
+
+
