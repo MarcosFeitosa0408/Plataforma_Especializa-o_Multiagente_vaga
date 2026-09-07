@@ -846,7 +846,7 @@ def test_update_tracking_status_stored_job_application():
     status_data = status_response.json()
 
     assert status_data["tracking"] is not None
-    assert status_data["tracking"]["status"] == "SCREENING"
+    assert status_data["tracking"]["current_status"] == "SCREENING"
 
     stored_response = client.get(
         "/job-applications/api-tracking-status-001"
@@ -857,6 +857,6 @@ def test_update_tracking_status_stored_job_application():
     stored_data = stored_response.json()
 
     assert stored_data["tracking"] is not None
-    assert stored_data["tracking"]["status"] == "SCREENING"
+    assert stored_data["tracking"]["current_status"] == "SCREENING"
 
 
