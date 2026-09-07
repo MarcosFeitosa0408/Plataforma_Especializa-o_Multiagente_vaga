@@ -224,3 +224,31 @@ def personalize_job_application(application_id: str):
 
     return saved_application
 
+
+@app.post("/job-applications/{application_id}/prepare")
+def prepare_job_application(application_id: str):
+    application = orchestrator.get_job_application(
+        application_id
+    )
+
+    if application is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "message": "Candidatura não encontrada.",
+                "application_id": application_id,
+            },
+        )
+
+    prepared_application = (
+        orchestrator.prepare_job_application(
+            application
+        )
+    )
+
+    saved_application = orchestrator.save_job_application(
+        prepared_application
+    )
+
+    return saved_application
+
