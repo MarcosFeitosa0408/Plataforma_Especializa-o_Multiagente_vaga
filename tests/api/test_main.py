@@ -283,3 +283,54 @@ def test_get_unknown_job_application():
         data["detail"]["application_id"]
         == "api-inexistente-001"
     )
+
+
+def test_list_job_applications():
+    first_payload = {
+        "application_id": "api-list-001",
+        "job": {
+            "job_id": "api-list-job-001",
+            "title": "Analista de Dados Júnior",
+            "company": "Empresa Teste A",
+            "source": "API",
+        },
+    }
+
+    second_payload = {
+        "application_id": "api-list-002",
+        "job": {
+            "job_id": "api-list-job-002",
+            "title": "Analista de BI Júnior",
+            "company": "Empresa Teste B",
+            "source": "API",
+        },
+    }
+
+    first_response = client.post(
+        "/job-applications",
+        json=first_payload,
+    )
+
+    second_response = client.post(
+        "/job-applications",
+        json=second_payload,
+    )
+
+    assert first_response.status_code == 200
+    assert second_response.status_code == 200
+
+    response = client.get("/job-applications")
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    application_ids = {
+        application["application_id"]
+        for application in data
+    }
+
+    assert "api-list-001" in application_ids
+    assert "api-list-002" in application_ids
+
+
