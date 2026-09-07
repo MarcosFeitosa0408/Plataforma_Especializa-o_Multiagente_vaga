@@ -473,3 +473,83 @@ def test_personalize_stored_job_application():
     )
 
 
+def test_prepare_stored_job_application():
+    create_payload = {
+        "application_id": "api-prepare-stored-001",
+        "job": {
+            "job_id": "api-prepare-stored-job-001",
+            "title": "Analista de Dados Júnior",
+            "company": "Empresa Teste",
+            "source": "API",
+            "location": "São Paulo",
+            "work_model": "HYBRID",
+            "employment_type": "CLT",
+            "description": "Vaga para análise de dados.",
+            "requirements": [
+                "Power BI",
+                "SQL",
+                "Python",
+                "Excel",
+                "DAX",
+            ],
+            "desirable_requirements": [],
+        },
+    }
+
+    create_response = client.post(
+        "/job-applications",
+        json=create_payload,
+    )
+
+    assert create_response.status_code == 200
+
+    qualify_response = client.post(
+        "/job-applications/api-prepare-stored-001/qualify"
+    )
+
+    assert qualify_response.status_code == 200
+
+    personalize_response = client.post(
+        "/job-applications/api-prepare-stored-001/personalize"
+    )
+
+    assert personalize_response.status_code == 200
+
+    prepare_response = client.post(
+        "/job-applications/api-prepare-stored-001/prepare"
+    )
+
+    assert prepare_response.status_code == 200
+
+    prepared_data = prepare_response.json()
+
+    assert prepared_data["application_id"] == "api-prepare-stored-001"
+    assert prepared_data["qualification"] is not None
+    assert prepared_data["personalization"] is not None
+    assert prepared_data["preparation"] is not None
+
+    assert (
+        prepared_data["preparation"]["decision"]
+        == "PENDING_HUMAN_APPROVAL"
+    )
+
+    assert (
+        prepared_data["preparation"]["ready_to_apply"]
+        is False
+    )
+
+    get_response = client.get(
+        "/job-applications/api-prepare-stored-001"
+    )
+
+    assert get_response.status_code == 200
+
+    saved_data = get_response.json()
+
+    assert saved_data["preparation"] is not None
+    assert (
+        saved_data["preparation"]["decision"]
+        == "PENDING_HUMAN_APPROVAL"
+    )
+
+
