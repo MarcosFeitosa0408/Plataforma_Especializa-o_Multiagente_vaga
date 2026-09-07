@@ -941,3 +941,87 @@ def test_check_follow_up_stored_job_application():
     assert follow_up_data["should_follow_up"] is True
 
 
+def test_get_job_application_metrics():
+    application_payload = {
+        "application_id": "api-metrics-001",
+        "job": {
+            "job_id": "job-metrics-001",
+            "title": "Analista de Dados Júnior",
+            "company": "Empresa Teste",
+            "source": "Teste API",
+            "location": "São Paulo",
+            "work_model": "HYBRID",
+            "employment_type": "CLT",
+            "description": "Vaga de teste para métricas do funil.",
+            "requirements": [
+                "Power BI",
+                "SQL",
+                "Python",
+                "Excel",
+            ],
+            "desirable_requirements": [],
+        },
+    }
+
+    create_response = client.post(
+        "/job-applications",
+        json=application_payload,
+    )
+    assert create_response.status_code == 200
+
+    qualify_response = client.post(
+        "/job-applications/api-metrics-001/qualify"
+    )
+    assert qualify_response.status_code == 200
+
+    personalize_response = client.post(
+        "/job-applications/api-metrics-001/personalize"
+    )
+    assert personalize_response.status_code == 200
+
+    prepare_response = client.post(
+        "/job-applications/api-metrics-001/prepare"
+    )
+    assert prepare_response.status_code == 200
+
+    approve_response = client.post(
+        "/job-applications/api-metrics-001/approve"
+    )
+    assert approve_response.status_code == 200
+
+    tracking_response = client.post(
+        "/job-applications/api-metrics-001/tracking/start"
+    )
+    assert tracking_response.status_code == 200
+
+    applied_response = client.post(
+        "/job-applications/api-metrics-001/tracking/status",
+        json={
+            "new_status": "APPLIED",
+            "note": "Candidatura enviada.",
+        },
+    )
+    assert applied_response.status_code == 200
+
+    screening_response = client.post(
+        "/job-applications/api-metrics-001/tracking/status",
+        json={
+            "new_status": "SCREENING",
+            "note": "Candidatura avançou para triagem.",
+        },
+    )
+    assert screening_response.status_code == 200
+
+    metrics_response = client.get(
+        "/job-applications/metrics"
+    )
+
+    assert metrics_response.status_code == 200
+
+    metrics = metrics_response.json()
+
+    assert metrics["total_applications"] >= 1
+    assert metrics["screening_or_beyond"] >= 1
+    assert metrics["response_rate"] > 0
+
+
