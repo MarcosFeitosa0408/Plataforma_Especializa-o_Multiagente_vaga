@@ -252,3 +252,59 @@ def prepare_job_application(application_id: str):
 
     return saved_application
 
+
+@app.post("/job-applications/{application_id}/approve")
+def approve_stored_job_application(application_id: str):
+    application = orchestrator.get_job_application(
+        application_id
+    )
+
+    if application is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "message": "Candidatura não encontrada.",
+                "application_id": application_id,
+            },
+        )
+
+    approved_application = (
+        orchestrator.approve_job_application(
+            application
+        )
+    )
+
+    saved_application = orchestrator.save_job_application(
+        approved_application
+    )
+
+    return saved_application
+
+
+@app.post("/job-applications/{application_id}/reject")
+def reject_stored_job_application(application_id: str):
+    application = orchestrator.get_job_application(
+        application_id
+    )
+
+    if application is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "message": "Candidatura não encontrada.",
+                "application_id": application_id,
+            },
+        )
+
+    rejected_application = (
+        orchestrator.reject_job_application(
+            application
+        )
+    )
+
+    saved_application = orchestrator.save_job_application(
+        rejected_application
+    )
+
+    return saved_application
+
