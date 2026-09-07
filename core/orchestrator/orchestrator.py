@@ -268,7 +268,7 @@ class JobOrchestrator:
         )
 
 
-    def approve_job_application(
+        def approve_job_application(
         self,
         application: JobApplicationObject,
     ) -> JobApplicationObject:
@@ -290,7 +290,7 @@ class JobOrchestrator:
         )
 
 
-        def reject_job_application(
+    def reject_job_application(
         self,
         application: JobApplicationObject,
     ) -> JobApplicationObject:
