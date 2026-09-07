@@ -168,3 +168,31 @@ def get_job_application(application_id: str):
 
     return application
 
+
+@app.post("/job-applications/{application_id}/qualify")
+def qualify_job_application(application_id: str):
+    application = orchestrator.get_job_application(
+        application_id
+    )
+
+    if application is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "message": "Candidatura não encontrada.",
+                "application_id": application_id,
+            },
+        )
+
+    qualified_application = (
+        orchestrator.qualify_job_application(
+            application
+        )
+    )
+
+    saved_application = orchestrator.save_job_application(
+        qualified_application
+    )
+
+    return saved_application
+
