@@ -389,3 +389,87 @@ def test_qualify_stored_job_application():
     assert saved_data["qualification"]["job_id"] == "api-qualify-job-001"
 
 
+def test_personalize_stored_job_application():
+    create_payload = {
+        "application_id": "api-personalize-001",
+        "job": {
+            "job_id": "api-personalize-job-001",
+            "title": "Analista de Dados Júnior",
+            "company": "Empresa Teste",
+            "source": "API",
+            "location": "São Paulo",
+            "work_model": "HYBRID",
+            "employment_type": "CLT",
+            "description": "Vaga para análise de dados.",
+            "requirements": [
+                "Power BI",
+                "SQL",
+                "Python",
+                "Excel",
+                "DAX",
+                "Apache Spark",
+            ],
+            "desirable_requirements": [],
+        },
+    }
+
+    create_response = client.post(
+        "/job-applications",
+        json=create_payload,
+    )
+
+    assert create_response.status_code == 200
+
+    qualify_response = client.post(
+        "/job-applications/api-personalize-001/qualify"
+    )
+
+    assert qualify_response.status_code == 200
+
+    personalize_response = client.post(
+        "/job-applications/api-personalize-001/personalize"
+    )
+
+    assert personalize_response.status_code == 200
+
+    personalized_data = personalize_response.json()
+
+    assert personalized_data["application_id"] == "api-personalize-001"
+    assert personalized_data["qualification"] is not None
+    assert personalized_data["personalization"] is not None
+
+    assert (
+        personalized_data["personalization"]["job_id"]
+        == "api-personalize-job-001"
+    )
+
+    assert (
+        personalized_data["personalization"]["evidence_verified"]
+        is True
+    )
+
+    assert (
+        "Power BI"
+        in personalized_data["personalization"]["selected_skills"]
+    )
+
+    assert (
+        "Apache Spark"
+        not in personalized_data["personalization"]["selected_skills"]
+    )
+
+    get_response = client.get(
+        "/job-applications/api-personalize-001"
+    )
+
+    assert get_response.status_code == 200
+
+    saved_data = get_response.json()
+
+    assert saved_data["personalization"] is not None
+    assert (
+        saved_data["personalization"]["job_id"]
+        == "api-personalize-job-001"
+    )
+
+
