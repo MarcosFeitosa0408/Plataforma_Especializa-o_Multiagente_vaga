@@ -336,3 +336,36 @@ def start_stored_job_application_tracking(application_id: str):
 
     return saved_application
 
+
+@app.post("/job-applications/{application_id}/tracking/status")
+def update_stored_job_application_status(
+    application_id: str,
+    request: TrackingStatusUpdateRequest,
+):
+    application = orchestrator.get_job_application(
+        application_id
+    )
+
+    if application is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "message": "Candidatura não encontrada.",
+                "application_id": application_id,
+            },
+        )
+
+    updated_application = (
+        orchestrator.update_job_application_status(
+            application,
+            request.new_status,
+            request.note,
+        )
+    )
+
+    saved_application = orchestrator.save_job_application(
+        updated_application
+    )
+
+    return saved_application
+
