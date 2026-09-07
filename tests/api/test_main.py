@@ -701,29 +701,25 @@ def test_reject_stored_job_application():
 
 def test_start_tracking_stored_job_application():
     application_payload = {
-        "application_id": "api-tracking-start-001",
-        "job": {
-            "job_id": "job-tracking-start-001",
-            "title": "Analista de Dados Júnior",
-            "company": "Empresa Teste",
-            "location": "São Paulo",
-            "work_model": "HYBRID",
-            "seniority": "JUNIOR",
-            "required_skills": [
-                "Power BI",
-                "SQL",
-                "Python",
-                "Excel",
-            ],
-            "preferred_skills": [],
-            "responsibilities": [
-                "Criar dashboards",
-                "Analisar dados",
-            ],
-            "mandatory_requirements": [],
-            "description": "Vaga de teste para início de tracking.",
-        },
-    }
+    "application_id": "api-tracking-start-001",
+    "job": {
+        "job_id": "job-tracking-start-001",
+        "title": "Analista de Dados Júnior",
+        "company": "Empresa Teste",
+        "source": "Teste API",
+        "location": "São Paulo",
+        "work_model": "HYBRID",
+        "employment_type": "CLT",
+        "description": "Vaga de teste para início de tracking.",
+        "requirements": [
+            "Power BI",
+            "SQL",
+            "Python",
+            "Excel",
+        ],
+        "desirable_requirements": [],
+    },
+}
 
     create_response = client.post(
         "/job-applications",
