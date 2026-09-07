@@ -308,3 +308,31 @@ def reject_stored_job_application(application_id: str):
 
     return saved_application
 
+
+@app.post("/job-applications/{application_id}/tracking/start")
+def start_stored_job_application_tracking(application_id: str):
+    application = orchestrator.get_job_application(
+        application_id
+    )
+
+    if application is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "message": "Candidatura não encontrada.",
+                "application_id": application_id,
+            },
+        )
+
+    tracked_application = (
+        orchestrator.start_job_application_tracking(
+            application
+        )
+    )
+
+    saved_application = orchestrator.save_job_application(
+        tracked_application
+    )
+
+    return saved_application
+
