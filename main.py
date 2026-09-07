@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException
-
+from datetime import datetime
 from core.orchestrator.orchestrator import JobOrchestrator
 from core.schemas.api import (
     ApplicationDecisionRequest,
@@ -375,7 +375,7 @@ def update_stored_job_application_status(
 def check_stored_job_application_follow_up(
     application_id: str,
     followup_count: int,
-    last_contact_at: str,
+    last_contact_at: datetime,
 ):
     application = orchestrator.get_job_application(
         application_id
