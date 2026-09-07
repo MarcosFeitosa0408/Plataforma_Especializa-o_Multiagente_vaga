@@ -5,6 +5,7 @@ from core.schemas.api import (
     ApplicationDecisionRequest,
     JobAnalysisRequest,
     JobApplicationCreateRequest,
+    StoredTrackingStatusUpdateRequest,
     TrackingStatusUpdateRequest,
 )
 from core.schemas.job import JobOpportunity
@@ -340,7 +341,7 @@ def start_stored_job_application_tracking(application_id: str):
 @app.post("/job-applications/{application_id}/tracking/status")
 def update_stored_job_application_status(
     application_id: str,
-    request: TrackingStatusUpdateRequest,
+    request: StoredTrackingStatusUpdateRequest,
 ):
     application = orchestrator.get_job_application(
         application_id
