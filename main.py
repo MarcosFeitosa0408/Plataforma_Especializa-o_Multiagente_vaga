@@ -152,6 +152,17 @@ def list_job_applications():
     return orchestrator.list_job_applications()
 
 
+@app.get("/job-applications/metrics")
+def get_job_application_metrics():
+    applications = orchestrator.list_job_applications()
+
+    metrics = orchestrator.calculate_job_application_metrics(
+        applications
+    )
+
+    return metrics
+
+
 @app.get("/job-applications/{application_id}")
 def get_job_application(application_id: str):
     application = orchestrator.get_job_application(
@@ -167,6 +178,7 @@ def get_job_application(application_id: str):
             },
         )
 
+    return application
     return application
 
 
@@ -402,4 +414,7 @@ def check_stored_job_application_follow_up(
         "application_id": application_id,
         "should_follow_up": should_follow_up,
     }
+
+
+
 
