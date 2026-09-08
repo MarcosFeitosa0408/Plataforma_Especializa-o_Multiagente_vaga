@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta, timezone
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -592,3 +593,115 @@ def test_tracking_status_is_preserved_after_persistence():
         recovered_application.tracking.history[-1].note
         == "Candidatura enviada."
     )
+
+
+def test_recovered_application_remains_eligible_for_follow_up():
+    engine = create_engine(
+        "sqlite+pysqlite:///:memory:",
+    )
+
+    Base.metadata.create_all(engine)
+
+    session_factory = sessionmaker(
+        bind=engine,
+        autoflush=False,
+        expire_on_commit=False,
+    )
+
+    repository = PostgreSQLJobApplicationRepository(
+        session_factory
+    )
+
+    orchestrator = JobOrchestrator()
+    orchestrator.job_application_repository = repository
+
+    job = JobOpportunity(
+        job_id="vaga-persistencia-009",
+        title="Analista de Dados Júnior",
+        company="Empresa Teste",
+        source="TESTE",
+        location="São Paulo",
+        work_model=WorkModel.HYBRID,
+        employment_type="CLT",
+        requirements=[
+            "Power BI",
+            "SQL",
+            "Excel",
+            "Python",
+            "DAX",
+        ],
+    )
+
+    application = orchestrator.create_job_application(
+        job=job,
+        application_id="app-persistencia-009",
+    )
+
+    qualified_application = (
+        orchestrator.qualify_job_application(
+            application
+        )
+    )
+
+    personalized_application = (
+        orchestrator.personalize_job_application(
+            qualified_application
+        )
+    )
+
+    prepared_application = (
+        orchestrator.prepare_job_application(
+            personalized_application
+        )
+    )
+
+    approved_application = (
+        orchestrator.approve_job_application(
+            prepared_application
+        )
+    )
+
+    tracked_application = (
+        orchestrator.start_job_application_tracking(
+            approved_application
+        )
+    )
+
+    applied_application = (
+        orchestrator.update_job_application_status(
+            tracked_application,
+            JobStatus.APPLIED,
+            "Candidatura enviada.",
+        )
+    )
+
+    orchestrator.save_job_application(
+        applied_application
+    )
+
+    recovered_application = repository.get(
+        "app-persistencia-009"
+    )
+
+    last_contact_at = datetime(
+        2026,
+        9,
+        1,
+        tzinfo=timezone.utc,
+    )
+
+    now = last_contact_at + timedelta(
+        days=5
+    )
+
+    should_follow_up = (
+        orchestrator.should_follow_up_job_application(
+            recovered_application,
+            followup_count=0,
+            last_contact_at=last_contact_at,
+            now=now,
+        )
+    )
+
+    assert recovered_application is not None
+    assert should_follow_up is True
