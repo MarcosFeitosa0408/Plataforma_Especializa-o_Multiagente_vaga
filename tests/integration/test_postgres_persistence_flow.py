@@ -327,3 +327,85 @@ def test_personalization_is_preserved_after_persistence():
         recovered_application.personalization
         == personalized_application.personalization
     )
+
+
+def test_human_approval_is_preserved_after_persistence():
+    engine = create_engine(
+        "sqlite+pysqlite:///:memory:",
+    )
+
+    Base.metadata.create_all(engine)
+
+    session_factory = sessionmaker(
+        bind=engine,
+        autoflush=False,
+        expire_on_commit=False,
+    )
+
+    repository = PostgreSQLJobApplicationRepository(
+        session_factory
+    )
+
+    orchestrator = JobOrchestrator()
+    orchestrator.job_application_repository = repository
+
+    job = JobOpportunity(
+        job_id="vaga-persistencia-006",
+        title="Analista de Dados Júnior",
+        company="Empresa Teste",
+        source="TESTE",
+        location="São Paulo",
+        work_model=WorkModel.HYBRID,
+        employment_type="CLT",
+        requirements=[
+            "Power BI",
+            "SQL",
+            "Excel",
+            "Python",
+            "DAX",
+        ],
+    )
+
+    application = orchestrator.create_job_application(
+        job=job,
+        application_id="app-persistencia-006",
+    )
+
+    qualified_application = (
+        orchestrator.qualify_job_application(
+            application
+        )
+    )
+
+    personalized_application = (
+        orchestrator.personalize_job_application(
+            qualified_application
+        )
+    )
+
+    prepared_application = (
+        orchestrator.prepare_job_application(
+            personalized_application
+        )
+    )
+
+    approved_application = (
+        orchestrator.approve_job_application(
+            prepared_application
+        )
+    )
+
+    orchestrator.save_job_application(
+        approved_application
+    )
+
+    recovered_application = repository.get(
+        "app-persistencia-006"
+    )
+
+    assert recovered_application is not None
+    assert recovered_application.preparation is not None
+    assert (
+        recovered_application.preparation
+        == approved_application.preparation
+    )
