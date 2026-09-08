@@ -1,6 +1,12 @@
 from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 import main
+from core.models import Base
+from core.repositories.postgres_job_application_repository import (
+    PostgreSQLJobApplicationRepository,
+)
 from main import app
 
 
@@ -1172,5 +1178,78 @@ def test_job_application_updated_at_changes_after_update():
 
     assert updated_application["created_at"] == original_created_at
     assert updated_application["updated_at"] != original_updated_at
+
+
+def test_api_creates_and_recovers_persisted_job_application(
+    monkeypatch,
+):
+    engine = create_engine(
+        "sqlite+pysqlite:///:memory:",
+    )
+
+    Base.metadata.create_all(engine)
+
+    session_factory = sessionmaker(
+        bind=engine,
+        autoflush=False,
+        expire_on_commit=False,
+    )
+
+    repository = PostgreSQLJobApplicationRepository(
+        session_factory
+    )
+
+    monkeypatch.setattr(
+        main.orchestrator,
+        "job_application_repository",
+        repository,
+    )
+
+    payload = {
+        "application_id": "app-api-persistencia-001",
+        "job": {
+            "job_id": "vaga-api-persistencia-001",
+            "title": "Analista de Dados Júnior",
+            "company": "Empresa Teste",
+            "source": "TESTE",
+            "location": "São Paulo",
+            "work_model": "HYBRID",
+            "employment_type": "CLT",
+            "requirements": [
+                "Power BI",
+                "SQL",
+                "Excel",
+                "Python",
+            ],
+        },
+    }
+
+    create_response = client.post(
+        "/job-applications",
+        json=payload,
+    )
+
+    assert create_response.status_code == 200
+
+    get_response = client.get(
+        "/job-applications/app-api-persistencia-001"
+    )
+
+    assert get_response.status_code == 200
+
+    recovered_application = get_response.json()
+
+    assert (
+        recovered_application["application_id"]
+        == "app-api-persistencia-001"
+    )
+    assert (
+        recovered_application["job"]["job_id"]
+        == "vaga-api-persistencia-001"
+    )
+    assert (
+        recovered_application["job"]["title"]
+        == "Analista de Dados Júnior"
+    )
 
 
