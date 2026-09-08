@@ -135,3 +135,56 @@ def test_orchestrator_updates_persisted_job_application():
         == "Analista de BI Júnior"
     )
     assert len(applications) == 1
+
+
+def test_orchestrator_deletes_persisted_job_application():
+    engine = create_engine(
+        "sqlite+pysqlite:///:memory:",
+    )
+
+    Base.metadata.create_all(engine)
+
+    session_factory = sessionmaker(
+        bind=engine,
+        autoflush=False,
+        expire_on_commit=False,
+    )
+
+    repository = PostgreSQLJobApplicationRepository(
+        session_factory
+    )
+
+    orchestrator = JobOrchestrator()
+    orchestrator.job_application_repository = repository
+
+    job = JobOpportunity(
+        job_id="vaga-persistencia-003",
+        title="Analista de Dados Júnior",
+        company="Empresa Teste",
+        source="TESTE",
+        location="São Paulo",
+        work_model=WorkModel.HYBRID,
+        employment_type="CLT",
+        requirements=[
+            "Power BI",
+            "SQL",
+        ],
+    )
+
+    application = orchestrator.create_job_application(
+        job=job,
+        application_id="app-persistencia-003",
+    )
+
+    orchestrator.save_job_application(application)
+
+    deleted = repository.delete(
+        "app-persistencia-003"
+    )
+
+    recovered_application = repository.get(
+        "app-persistencia-003"
+    )
+
+    assert deleted is True
+    assert recovered_application is None
