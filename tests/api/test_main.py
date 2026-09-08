@@ -1257,3 +1257,126 @@ def test_api_creates_and_recovers_persisted_job_application(
     )
 
 
+def test_api_runs_persisted_application_pipeline(
+    monkeypatch,
+):
+    engine = create_engine(
+        "sqlite+pysqlite:///:memory:",
+        connect_args={
+            "check_same_thread": False,
+        },
+        poolclass=StaticPool,
+    )
+
+    Base.metadata.create_all(engine)
+
+    session_factory = sessionmaker(
+        bind=engine,
+        autoflush=False,
+        expire_on_commit=False,
+    )
+
+    repository = PostgreSQLJobApplicationRepository(
+        session_factory
+    )
+
+    monkeypatch.setattr(
+        main.orchestrator,
+        "job_application_repository",
+        repository,
+    )
+
+    application_id = "app-api-pipeline-001"
+
+    payload = {
+        "application_id": application_id,
+        "job": {
+            "job_id": "vaga-api-pipeline-001",
+            "title": "Analista de Dados Júnior",
+            "company": "Empresa Teste",
+            "source": "TESTE",
+            "location": "São Paulo",
+            "work_model": "HYBRID",
+            "employment_type": "CLT",
+            "requirements": [
+                "Power BI",
+                "SQL",
+                "Excel",
+                "Python",
+                "DAX",
+            ],
+        },
+    }
+
+    create_response = client.post(
+        "/job-applications",
+        json=payload,
+    )
+
+    assert create_response.status_code == 200
+
+    qualify_response = client.post(
+        f"/job-applications/{application_id}/qualify"
+    )
+
+    assert qualify_response.status_code == 200
+
+    personalize_response = client.post(
+        f"/job-applications/{application_id}/personalize"
+    )
+
+    assert personalize_response.status_code == 200
+
+    prepare_response = client.post(
+        f"/job-applications/{application_id}/prepare"
+    )
+
+    assert prepare_response.status_code == 200
+
+    approve_response = client.post(
+        f"/job-applications/{application_id}/approve"
+    )
+
+    assert approve_response.status_code == 200
+
+    tracking_response = client.post(
+        f"/job-applications/{application_id}/tracking/start"
+    )
+
+    assert tracking_response.status_code == 200
+
+    status_response = client.post(
+        f"/job-applications/{application_id}/tracking/status",
+        json={
+            "new_status": "APPLIED",
+            "note": "Candidatura enviada.",
+        },
+    )
+
+    assert status_response.status_code == 200
+
+    get_response = client.get(
+        f"/job-applications/{application_id}"
+    )
+
+    assert get_response.status_code == 200
+
+    recovered_application = get_response.json()
+
+    assert recovered_application["application_id"] == application_id
+    assert recovered_application["qualification"] is not None
+    assert recovered_application["personalization"] is not None
+    assert recovered_application["preparation"] is not None
+    assert recovered_application["tracking"] is not None
+
+    assert (
+        recovered_application["tracking"]["current_status"]
+        == "APPLIED"
+    )
+
+    assert (
+        recovered_application["tracking"]["history"][-1]["note"]
+        == "Candidatura enviada."
+    )
+
+
