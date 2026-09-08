@@ -1,7 +1,12 @@
+from core.repositories.base_job_application_repository import (
+    BaseJobApplicationRepository,
+)
 from core.schemas.job_application import JobApplicationObject
 
 
-class InMemoryJobApplicationRepository:
+class InMemoryJobApplicationRepository(
+    BaseJobApplicationRepository
+):
     """Armazena candidaturas em memória durante a execução da aplicação."""
 
     def __init__(self) -> None:
