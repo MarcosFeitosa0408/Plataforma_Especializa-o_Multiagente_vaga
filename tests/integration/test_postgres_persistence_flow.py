@@ -188,3 +188,71 @@ def test_orchestrator_deletes_persisted_job_application():
 
     assert deleted is True
     assert recovered_application is None
+
+
+def test_qualification_is_preserved_after_persistence():
+    engine = create_engine(
+        "sqlite+pysqlite:///:memory:",
+    )
+
+    Base.metadata.create_all(engine)
+
+    session_factory = sessionmaker(
+        bind=engine,
+        autoflush=False,
+        expire_on_commit=False,
+    )
+
+    repository = PostgreSQLJobApplicationRepository(
+        session_factory
+    )
+
+    orchestrator = JobOrchestrator()
+    orchestrator.job_application_repository = repository
+
+    job = JobOpportunity(
+        job_id="vaga-persistencia-004",
+        title="Analista de Dados Júnior",
+        company="Empresa Teste",
+        source="TESTE",
+        location="São Paulo",
+        work_model=WorkModel.HYBRID,
+        employment_type="CLT",
+        requirements=[
+            "Power BI",
+            "SQL",
+            "Excel",
+            "Python",
+            "DAX",
+        ],
+    )
+
+    application = orchestrator.create_job_application(
+        job=job,
+        application_id="app-persistencia-004",
+    )
+
+    qualified_application = (
+        orchestrator.qualify_job_application(
+            application
+        )
+    )
+
+    orchestrator.save_job_application(
+        qualified_application
+    )
+
+    recovered_application = repository.get(
+        "app-persistencia-004"
+    )
+
+    assert recovered_application is not None
+    assert recovered_application.qualification is not None
+    assert (
+        recovered_application.qualification.fit_score
+        == qualified_application.qualification.fit_score
+    )
+    assert (
+        recovered_application.qualification.recommendation
+        == qualified_application.qualification.recommendation
+    )
