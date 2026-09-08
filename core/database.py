@@ -3,6 +3,8 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+from core.models import Base
+
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
@@ -31,3 +33,10 @@ def create_session_factory():
         autoflush=False,
         expire_on_commit=False,
     )
+
+
+def initialize_database() -> None:
+    """Cria no banco as tabelas definidas pelos modelos SQLAlchemy."""
+
+    engine = create_database_engine()
+    Base.metadata.create_all(engine)
