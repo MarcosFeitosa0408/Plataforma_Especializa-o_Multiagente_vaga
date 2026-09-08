@@ -65,3 +65,73 @@ def test_orchestrator_persists_and_recovers_job_application():
     )
     assert recovered_application.job.job_id == "vaga-persistencia-001"
     assert recovered_application.job.title == "Analista de Dados Júnior"
+
+
+def test_orchestrator_updates_persisted_job_application():
+    engine = create_engine(
+        "sqlite+pysqlite:///:memory:",
+    )
+
+    Base.metadata.create_all(engine)
+
+    session_factory = sessionmaker(
+        bind=engine,
+        autoflush=False,
+        expire_on_commit=False,
+    )
+
+    repository = PostgreSQLJobApplicationRepository(
+        session_factory
+    )
+
+    orchestrator = JobOrchestrator()
+    orchestrator.job_application_repository = repository
+
+    job = JobOpportunity(
+        job_id="vaga-persistencia-002",
+        title="Analista de Dados Júnior",
+        company="Empresa Teste",
+        source="TESTE",
+        location="São Paulo",
+        work_model=WorkModel.HYBRID,
+        employment_type="CLT",
+        requirements=[
+            "Power BI",
+            "SQL",
+            "Python",
+        ],
+    )
+
+    application = orchestrator.create_job_application(
+        job=job,
+        application_id="app-persistencia-002",
+    )
+
+    orchestrator.save_job_application(application)
+
+    updated_application = application.model_copy(
+        update={
+            "job": job.model_copy(
+                update={
+                    "title": "Analista de BI Júnior",
+                }
+            )
+        }
+    )
+
+    orchestrator.save_job_application(
+        updated_application
+    )
+
+    recovered_application = repository.get(
+        "app-persistencia-002"
+    )
+
+    applications = repository.list_all()
+
+    assert recovered_application is not None
+    assert (
+        recovered_application.job.title
+        == "Analista de BI Júnior"
+    )
+    assert len(applications) == 1
