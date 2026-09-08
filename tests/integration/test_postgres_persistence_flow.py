@@ -705,3 +705,102 @@ def test_recovered_application_remains_eligible_for_follow_up():
 
     assert recovered_application is not None
     assert should_follow_up is True
+
+
+def test_metrics_are_calculated_from_persisted_applications():
+    engine = create_engine(
+        "sqlite+pysqlite:///:memory:",
+    )
+
+    Base.metadata.create_all(engine)
+
+    session_factory = sessionmaker(
+        bind=engine,
+        autoflush=False,
+        expire_on_commit=False,
+    )
+
+    repository = PostgreSQLJobApplicationRepository(
+        session_factory
+    )
+
+    orchestrator = JobOrchestrator()
+    orchestrator.job_application_repository = repository
+
+    for index in range(2):
+        job = JobOpportunity(
+            job_id=f"vaga-metricas-{index}",
+            title="Analista de Dados Júnior",
+            company="Empresa Teste",
+            source="TESTE",
+            location="São Paulo",
+            work_model=WorkModel.HYBRID,
+            employment_type="CLT",
+            requirements=[
+                "Power BI",
+                "SQL",
+                "Excel",
+                "Python",
+                "DAX",
+            ],
+        )
+
+        application = orchestrator.create_job_application(
+            job=job,
+            application_id=f"app-metricas-{index}",
+        )
+
+        application = orchestrator.qualify_job_application(
+            application
+        )
+
+        application = orchestrator.personalize_job_application(
+            application
+        )
+
+        application = orchestrator.prepare_job_application(
+            application
+        )
+
+        application = orchestrator.approve_job_application(
+            application
+        )
+
+        application = orchestrator.start_job_application_tracking(
+            application
+        )
+
+        application = orchestrator.update_job_application_status(
+            application,
+            JobStatus.APPLIED,
+            "Candidatura enviada.",
+        )
+
+        if index == 0:
+            application = orchestrator.update_job_application_status(
+                application,
+                JobStatus.SCREENING,
+                "Candidatura em triagem.",
+            )
+
+        orchestrator.save_job_application(
+            application
+        )
+
+    persisted_applications = repository.list_all()
+
+    metrics = orchestrator.calculate_job_application_metrics(
+        persisted_applications
+    )
+
+    assert metrics["total_applications"] == 2
+    assert metrics["screening_or_beyond"] == 1
+    assert metrics["interviews"] == 0
+    assert metrics["finals"] == 0
+    assert metrics["offers"] == 0
+    assert metrics["hires"] == 0
+    assert metrics["rejections"] == 0
+    assert metrics["response_rate"] == 50.0
+    assert metrics["interview_rate"] == 0.0
+    assert metrics["offer_rate"] == 0.0
+    assert metrics["hire_rate"] == 0.0
