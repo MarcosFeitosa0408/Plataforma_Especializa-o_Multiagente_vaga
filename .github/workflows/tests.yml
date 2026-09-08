@@ -42,11 +42,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Executar testes
+            - name: Executar testes
         run: python -m pytest -v
 
-
-          postgres-tests:
+  postgres-tests:
     runs-on: ubuntu-latest
 
     services:
