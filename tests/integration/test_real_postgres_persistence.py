@@ -82,17 +82,17 @@ def test_real_postgres_persists_job_application():
 
 
 def test_real_postgres_runs_complete_application_pipeline():
-database_url = os.getenv("DATABASE_URL")
-repository_backend = os.getenv("REPOSITORY_BACKEND")
+    database_url = os.getenv("DATABASE_URL")
+    repository_backend = os.getenv("REPOSITORY_BACKEND")
 
-if (
-    not database_url
-    or not database_url.startswith("postgresql")
-    or repository_backend != "postgres"
-):
-    pytest.skip(
-        "Backend PostgreSQL real não configurado para este ambiente."
-    )
+    if (
+        not database_url
+        or not database_url.startswith("postgresql")
+        or repository_backend != "postgres"
+    ):
+        pytest.skip(
+            "Backend PostgreSQL real não configurado para este ambiente."
+        )
 
     engine = create_database_engine()
 
