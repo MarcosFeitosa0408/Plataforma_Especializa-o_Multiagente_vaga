@@ -21,9 +21,15 @@ app = FastAPI(
     version="0.2.0",
 )
 
-if os.getenv("REPOSITORY_BACKEND", "memory").lower() == "postgres":
-    initialize_database()
 
+def initialize_configured_database() -> None:
+    """Inicializa o banco somente quando o backend configurado é PostgreSQL."""
+
+    if os.getenv("REPOSITORY_BACKEND", "memory").lower() == "postgres":
+        initialize_database()
+
+
+initialize_configured_database()
 
 orchestrator = JobOrchestrator()
 
