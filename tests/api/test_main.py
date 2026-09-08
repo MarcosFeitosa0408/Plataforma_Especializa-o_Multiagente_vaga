@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
 
 import main
 from core.models import Base
@@ -11,7 +12,6 @@ from main import app
 
 
 client = TestClient(app)
-
 
 def test_initialize_configured_database_skips_memory_backend(
     monkeypatch,
@@ -1184,8 +1184,12 @@ def test_api_creates_and_recovers_persisted_job_application(
     monkeypatch,
 ):
     engine = create_engine(
-        "sqlite+pysqlite:///:memory:",
-    )
+    "sqlite+pysqlite:///:memory:",
+    connect_args={
+        "check_same_thread": False,
+    },
+    poolclass=StaticPool,
+)
 
     Base.metadata.create_all(engine)
 
