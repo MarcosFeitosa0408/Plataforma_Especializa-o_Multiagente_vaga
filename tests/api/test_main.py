@@ -1,9 +1,50 @@
 from fastapi.testclient import TestClient
 
+import main
 from main import app
 
 
 client = TestClient(app)
+
+
+def test_initialize_configured_database_skips_memory_backend(
+    monkeypatch,
+):
+    calls = []
+
+    monkeypatch.setenv(
+        "REPOSITORY_BACKEND",
+        "memory",
+    )
+    monkeypatch.setattr(
+        main,
+        "initialize_database",
+        lambda: calls.append("called"),
+    )
+
+    main.initialize_configured_database()
+
+    assert calls == []
+
+
+def test_initialize_configured_database_runs_for_postgres_backend(
+    monkeypatch,
+):
+    calls = []
+
+    monkeypatch.setenv(
+        "REPOSITORY_BACKEND",
+        "postgres",
+    )
+    monkeypatch.setattr(
+        main,
+        "initialize_database",
+        lambda: calls.append("called"),
+    )
+
+    main.initialize_configured_database()
+
+    assert calls == ["called"]
 
 
 def test_health():
