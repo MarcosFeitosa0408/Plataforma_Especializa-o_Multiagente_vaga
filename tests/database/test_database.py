@@ -8,8 +8,7 @@ def test_initialize_database_creates_job_applications_table(
 ):
     test_database_url = "sqlite+pysqlite:///:memory:"
 
-    monkeypatch.setattr(
-        database,
+        monkeypatch.setenv(
         "DATABASE_URL",
         test_database_url,
     )
