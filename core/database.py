@@ -6,19 +6,18 @@ from sqlalchemy.orm import sessionmaker
 from core.models import Base
 
 
-DATABASE_URL = os.getenv("DATABASE_URL")
-
-
 def create_database_engine():
     """Cria a engine do banco configurado pela variável DATABASE_URL."""
 
-    if not DATABASE_URL:
+    database_url = os.getenv("DATABASE_URL")
+
+    if not database_url:
         raise RuntimeError(
             "DATABASE_URL não configurada."
         )
 
     return create_engine(
-        DATABASE_URL,
+        database_url,
         pool_pre_ping=True,
     )
 
