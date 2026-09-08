@@ -1,8 +1,10 @@
 from datetime import datetime
+import os
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 
+from core.database import initialize_database
 from core.orchestrator.orchestrator import JobOrchestrator
 from core.schemas.api import (
     ApplicationDecisionRequest,
@@ -18,6 +20,9 @@ app = FastAPI(
     title="Plataforma Especialização Multiagente Vaga",
     version="0.2.0",
 )
+
+if os.getenv("REPOSITORY_BACKEND", "memory").lower() == "postgres":
+    initialize_database()
 
 
 orchestrator = JobOrchestrator()
