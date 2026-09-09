@@ -5,6 +5,9 @@ from sqlalchemy.pool import StaticPool
 
 import main
 from core.models import Base
+from core.repositories.job_application_repository import (
+    InMemoryJobApplicationRepository,
+)
 from core.repositories.postgres_job_application_repository import (
     PostgreSQLJobApplicationRepository,
 )
@@ -988,7 +991,15 @@ def test_check_follow_up_stored_job_application():
     assert follow_up_data["should_follow_up"] is True
 
 
-def test_get_job_application_metrics():
+def test_get_job_application_metrics(monkeypatch):
+    repository = InMemoryJobApplicationRepository()
+
+    monkeypatch.setattr(
+        main.orchestrator,
+        "job_application_repository",
+        repository,
+    )
+
     application_payload = {
         "application_id": "api-metrics-001",
         "job": {
@@ -1067,9 +1078,18 @@ def test_get_job_application_metrics():
 
     metrics = metrics_response.json()
 
-    assert metrics["total_applications"] >= 1
-    assert metrics["screening_or_beyond"] >= 1
-    assert metrics["response_rate"] > 0
+    assert metrics["total_applications"] == 1
+    assert metrics["screening_or_beyond"] == 1
+    assert metrics["interviews"] == 0
+    assert metrics["finals"] == 0
+    assert metrics["offers"] == 0
+    assert metrics["hires"] == 0
+    assert metrics["rejections"] == 0
+
+    assert metrics["response_rate"] == 100.0
+    assert metrics["interview_rate"] == 0.0
+    assert metrics["offer_rate"] == 0.0
+    assert metrics["hire_rate"] == 0.0
 
 
 def test_invalid_tracking_transition_returns_http_400():
