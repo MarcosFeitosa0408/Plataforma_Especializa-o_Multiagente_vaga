@@ -21,3 +21,5 @@ class ApplicationTracking(StrictModel):
     job_id: str = Field(min_length=1)
     current_status: JobStatus
     history: list[TrackingEvent] = Field(default_factory=list)
+    followup_count: int = Field(default=0, ge=0)
+    last_followup_at: datetime | None = None
