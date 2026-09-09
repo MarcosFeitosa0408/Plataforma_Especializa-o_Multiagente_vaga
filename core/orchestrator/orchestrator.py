@@ -380,11 +380,11 @@ class JobOrchestrator:
 
         return self._update_job_application(
             application,
-            tracking=updated_tracking,
+            tracking=updated_tracking, 
         )
 
 
-       def should_follow_up_job_application(
+    def should_follow_up_job_application(
         self,
         application: JobApplicationObject,
         followup_count: int,
