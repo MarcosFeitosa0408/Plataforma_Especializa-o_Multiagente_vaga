@@ -406,6 +406,53 @@ class JobOrchestrator:
         )
 
 
+        def register_job_application_follow_up(
+        self,
+        application: JobApplicationObject,
+        occurred_at=None,
+    ) -> JobApplicationObject:
+        """Registra um follow-up realizado no objeto central."""
+
+        if application.tracking is None:
+            raise ValueError(
+                "A candidatura precisa estar em acompanhamento antes do follow-up."
+            )
+
+        if (
+            application.tracking.followup_count
+            >= self.followup_agent.MAX_FOLLOWUPS
+        ):
+            raise ValueError(
+                "O limite máximo de follow-ups já foi atingido."
+            )
+
+        if application.tracking.current_status in (
+            self.followup_agent.TERMINAL_STATUSES
+        ):
+            raise ValueError(
+                "Não é permitido registrar follow-up em candidatura encerrada."
+            )
+
+        followup_time = (
+            occurred_at
+            or datetime.now(timezone.utc)
+        )
+
+        updated_tracking = application.tracking.model_copy(
+            update={
+                "followup_count": (
+                    application.tracking.followup_count + 1
+                ),
+                "last_followup_at": followup_time,
+            }
+        )
+
+        return self._update_job_application(
+            application,
+            tracking=updated_tracking,
+        )
+
+
     def calculate_job_application_metrics(
         self,
         applications: list[JobApplicationObject],
