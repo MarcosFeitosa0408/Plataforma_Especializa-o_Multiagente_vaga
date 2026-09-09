@@ -433,6 +433,16 @@ class JobOrchestrator:
             application
         )
 
+    def delete_job_application(
+        self,
+        application_id: str,
+    ) -> bool:
+        """Remove uma candidatura armazenada no repositório."""
+
+        return self.job_application_repository.delete(
+            application_id
+        )
+
     def get_job_application(
         self,
         application_id: str,
