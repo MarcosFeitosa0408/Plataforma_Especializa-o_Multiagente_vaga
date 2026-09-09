@@ -446,7 +446,7 @@ class JobOrchestrator:
                 "O limite máximo de follow-ups já foi atingido."
             )
 
-                if application.tracking.current_status not in {
+        if application.tracking.current_status not in {
             JobStatus.APPLIED,
             JobStatus.SCREENING,
         }:
