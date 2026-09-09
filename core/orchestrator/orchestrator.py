@@ -459,6 +459,14 @@ class JobOrchestrator:
             or datetime.now(timezone.utc)
         )
 
+        if not self.should_follow_up_job_application(
+            application,
+            now=followup_time,
+        ):
+            raise ValueError(
+                "Ainda não é o momento permitido para registrar o follow-up."
+            )
+
         updated_tracking = application.tracking.model_copy(
             update={
                 "followup_count": (
@@ -472,6 +480,7 @@ class JobOrchestrator:
             application,
             tracking=updated_tracking,
         )
+        
 
     def calculate_job_application_metrics(
         self,
