@@ -384,7 +384,7 @@ class JobOrchestrator:
         )
 
 
-            def should_follow_up_job_application(
+    def should_follow_up_job_application(
         self,
         application: JobApplicationObject,
         now=None,
