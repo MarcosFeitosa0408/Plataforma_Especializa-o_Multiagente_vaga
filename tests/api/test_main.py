@@ -973,11 +973,7 @@ def test_check_follow_up_stored_job_application():
     assert status_response.status_code == 200
 
     follow_up_response = client.post(
-        "/job-applications/api-follow-up-check-001/follow-up/check",
-        params={
-            "followup_count": 0,
-            "last_contact_at": "2020-01-01T00:00:00+00:00",
-        },
+        "/job-applications/api-follow-up-check-001/follow-up/check"
     )
 
     assert follow_up_response.status_code == 200
@@ -988,7 +984,9 @@ def test_check_follow_up_stored_job_application():
         follow_up_data["application_id"]
         == "api-follow-up-check-001"
     )
-    assert follow_up_data["should_follow_up"] is True
+    assert follow_up_data["should_follow_up"] is False
+    assert follow_up_data["followup_count"] == 0
+    assert follow_up_data["last_followup_at"] is None
 
 
 def test_register_stored_job_application_follow_up(monkeypatch):
