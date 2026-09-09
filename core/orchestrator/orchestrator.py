@@ -14,7 +14,7 @@ from agents.agent_06_followup.followup_agent import FollowUpAgent
 from agents.agent_07_optimization.optimization_agent import OptimizationAgent
 
 from core.schemas.application import ApplicationPreparation
-from core.schemas.job import JobOpportunity
+from core.schemas.job import JobOpportunity, JobStatus
 from core.schemas.personalization import PersonalizationResult
 from core.schemas.qualification import QualificationResult
 from core.validation.validation_gate import ValidationGate
@@ -384,11 +384,9 @@ class JobOrchestrator:
         )
 
 
-    def should_follow_up_job_application(
+            def should_follow_up_job_application(
         self,
         application: JobApplicationObject,
-        followup_count: int,
-        last_contact_at,
         now=None,
     ) -> bool:
         """Verifica se o objeto central está apto para follow-up."""
@@ -398,9 +396,32 @@ class JobOrchestrator:
                 "A candidatura precisa estar em acompanhamento antes do follow-up."
             )
 
+        tracking = application.tracking
+
+        if tracking.followup_count > 0:
+            last_contact_at = tracking.last_followup_at
+        else:
+            applied_events = [
+                event
+                for event in tracking.history
+                if event.status == JobStatus.APPLIED
+            ]
+
+            if not applied_events:
+                raise ValueError(
+                    "A candidatura precisa ter sido enviada antes do follow-up."
+                )
+
+            last_contact_at = applied_events[-1].occurred_at
+
+        if last_contact_at is None:
+            raise ValueError(
+                "Não foi possível identificar a data do último contato."
+            )
+
         return self.followup_agent.should_follow_up(
-            tracking=application.tracking,
-            followup_count=followup_count,
+            tracking=tracking,
+            followup_count=tracking.followup_count,
             last_contact_at=last_contact_at,
             now=now,
         )
