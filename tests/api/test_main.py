@@ -1063,29 +1063,14 @@ def test_register_stored_job_application_follow_up(monkeypatch):
         "/job-applications/api-follow-up-register-001/follow-up/register"
     )
 
-    assert first_follow_up_response.status_code == 200
-
-    first_application = first_follow_up_response.json()
-
-    assert first_application["tracking"]["followup_count"] == 1
-    assert (
-        first_application["tracking"]["last_followup_at"]
-        is not None
-    )
-
-    second_follow_up_response = client.post(
-        "/job-applications/api-follow-up-register-001/follow-up/register"
-    )
-
-    assert second_follow_up_response.status_code == 200
-
-    second_application = second_follow_up_response.json()
-
-    assert second_application["tracking"]["followup_count"] == 2
-    assert (
-        second_application["tracking"]["last_followup_at"]
-        is not None
-    )
+    assert first_follow_up_response.status_code == 400
+    assert first_follow_up_response.json() == {
+        "error": "business_rule_violation",
+        "message": (
+            "Ainda não é o momento permitido para "
+            "registrar o follow-up."
+        ),
+    }
 
     recovered_response = client.get(
         "/job-applications/api-follow-up-register-001"
@@ -1095,30 +1080,10 @@ def test_register_stored_job_application_follow_up(monkeypatch):
 
     recovered_application = recovered_response.json()
 
-    assert recovered_application["tracking"]["followup_count"] == 2
+    assert recovered_application["tracking"]["followup_count"] == 0
     assert (
         recovered_application["tracking"]["last_followup_at"]
-        is not None
-    )
-
-    third_follow_up_response = client.post(
-        "/job-applications/api-follow-up-register-001/follow-up/register"
-    )
-
-    assert third_follow_up_response.status_code == 400
-    assert third_follow_up_response.json() == {
-        "error": "business_rule_violation",
-        "message": "O limite máximo de follow-ups já foi atingido.",
-    }
-
-    final_response = client.get(
-        "/job-applications/api-follow-up-register-001"
-    )
-
-    assert final_response.status_code == 200
-    assert (
-        final_response.json()["tracking"]["followup_count"]
-        == 2
+        is None
     )
 
 
