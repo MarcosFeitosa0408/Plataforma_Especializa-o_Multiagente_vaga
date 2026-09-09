@@ -446,11 +446,12 @@ class JobOrchestrator:
                 "O limite máximo de follow-ups já foi atingido."
             )
 
-        if application.tracking.current_status in (
-            self.followup_agent.TERMINAL_STATUSES
-        ):
+                if application.tracking.current_status not in {
+            JobStatus.APPLIED,
+            JobStatus.SCREENING,
+        }:
             raise ValueError(
-                "Não é permitido registrar follow-up em candidatura encerrada."
+                "Follow-up só pode ser registrado em candidatura enviada ou em triagem."
             )
 
         followup_time = (
