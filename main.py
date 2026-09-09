@@ -436,8 +436,6 @@ def update_stored_job_application_status(
 @app.post("/job-applications/{application_id}/follow-up/check")
 def check_stored_job_application_follow_up(
     application_id: str,
-    followup_count: int,
-    last_contact_at: datetime,
 ):
     application = orchestrator.get_job_application(
         application_id
@@ -455,14 +453,14 @@ def check_stored_job_application_follow_up(
     should_follow_up = (
         orchestrator.should_follow_up_job_application(
             application=application,
-            followup_count=followup_count,
-            last_contact_at=last_contact_at,
         )
     )
 
     return {
         "application_id": application_id,
         "should_follow_up": should_follow_up,
+        "followup_count": application.tracking.followup_count,
+        "last_followup_at": application.tracking.last_followup_at,
     }
 
 
