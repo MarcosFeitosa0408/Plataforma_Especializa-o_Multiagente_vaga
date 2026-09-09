@@ -683,27 +683,30 @@ def test_recovered_application_remains_eligible_for_follow_up():
         "app-persistencia-009"
     )
 
-    last_contact_at = datetime(
-        2026,
-        9,
-        1,
-        tzinfo=timezone.utc,
-    )
+        assert recovered_application is not None
+    assert recovered_application.tracking is not None
 
-    now = last_contact_at + timedelta(
+    applied_events = [
+        event
+        for event in recovered_application.tracking.history
+        if event.status == JobStatus.APPLIED
+    ]
+
+    assert applied_events
+
+    applied_at = applied_events[-1].occurred_at
+
+    now = applied_at + timedelta(
         days=5
     )
 
     should_follow_up = (
         orchestrator.should_follow_up_job_application(
             recovered_application,
-            followup_count=0,
-            last_contact_at=last_contact_at,
             now=now,
         )
     )
 
-    assert recovered_application is not None
     assert should_follow_up is True
 
 
