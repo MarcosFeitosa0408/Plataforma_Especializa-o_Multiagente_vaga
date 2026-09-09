@@ -1122,6 +1122,81 @@ def test_register_stored_job_application_follow_up(monkeypatch):
     )
 
 
+def test_register_follow_up_rejects_invalid_status(monkeypatch):
+    repository = InMemoryJobApplicationRepository()
+
+    monkeypatch.setattr(
+        main.orchestrator,
+        "job_application_repository",
+        repository,
+    )
+
+    application_payload = {
+        "application_id": "api-follow-up-invalid-status-001",
+        "job": {
+            "job_id": "job-follow-up-invalid-status-001",
+            "title": "Analista de Dados Júnior",
+            "company": "Empresa Teste",
+            "source": "Teste API",
+            "location": "São Paulo",
+            "work_model": "HYBRID",
+            "employment_type": "CLT",
+            "description": "Vaga de teste para bloqueio de follow-up.",
+            "requirements": [
+                "Power BI",
+                "SQL",
+                "Python",
+                "Excel",
+            ],
+            "desirable_requirements": [],
+        },
+    }
+
+    create_response = client.post(
+        "/job-applications",
+        json=application_payload,
+    )
+    assert create_response.status_code == 200
+
+    qualify_response = client.post(
+        "/job-applications/api-follow-up-invalid-status-001/qualify"
+    )
+    assert qualify_response.status_code == 200
+
+    personalize_response = client.post(
+        "/job-applications/api-follow-up-invalid-status-001/personalize"
+    )
+    assert personalize_response.status_code == 200
+
+    prepare_response = client.post(
+        "/job-applications/api-follow-up-invalid-status-001/prepare"
+    )
+    assert prepare_response.status_code == 200
+
+    approve_response = client.post(
+        "/job-applications/api-follow-up-invalid-status-001/approve"
+    )
+    assert approve_response.status_code == 200
+
+    tracking_response = client.post(
+        "/job-applications/api-follow-up-invalid-status-001/tracking/start"
+    )
+    assert tracking_response.status_code == 200
+
+    follow_up_response = client.post(
+        "/job-applications/api-follow-up-invalid-status-001/follow-up/register"
+    )
+
+    assert follow_up_response.status_code == 400
+    assert follow_up_response.json() == {
+        "error": "business_rule_violation",
+        "message": (
+            "Follow-up só pode ser registrado em candidatura "
+            "enviada ou em triagem."
+        ),
+    }
+
+
 def test_get_job_application_metrics(monkeypatch):
     repository = InMemoryJobApplicationRepository()
 
