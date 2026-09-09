@@ -991,6 +991,139 @@ def test_check_follow_up_stored_job_application():
     assert follow_up_data["should_follow_up"] is True
 
 
+def test_register_stored_job_application_follow_up(monkeypatch):
+    repository = InMemoryJobApplicationRepository()
+
+    monkeypatch.setattr(
+        main.orchestrator,
+        "job_application_repository",
+        repository,
+    )
+
+    application_payload = {
+        "application_id": "api-follow-up-register-001",
+        "job": {
+            "job_id": "job-follow-up-register-001",
+            "title": "Analista de Dados Júnior",
+            "company": "Empresa Teste",
+            "source": "Teste API",
+            "location": "São Paulo",
+            "work_model": "HYBRID",
+            "employment_type": "CLT",
+            "description": "Vaga de teste para registro de follow-up.",
+            "requirements": [
+                "Power BI",
+                "SQL",
+                "Python",
+                "Excel",
+            ],
+            "desirable_requirements": [],
+        },
+    }
+
+    create_response = client.post(
+        "/job-applications",
+        json=application_payload,
+    )
+    assert create_response.status_code == 200
+
+    qualify_response = client.post(
+        "/job-applications/api-follow-up-register-001/qualify"
+    )
+    assert qualify_response.status_code == 200
+
+    personalize_response = client.post(
+        "/job-applications/api-follow-up-register-001/personalize"
+    )
+    assert personalize_response.status_code == 200
+
+    prepare_response = client.post(
+        "/job-applications/api-follow-up-register-001/prepare"
+    )
+    assert prepare_response.status_code == 200
+
+    approve_response = client.post(
+        "/job-applications/api-follow-up-register-001/approve"
+    )
+    assert approve_response.status_code == 200
+
+    tracking_response = client.post(
+        "/job-applications/api-follow-up-register-001/tracking/start"
+    )
+    assert tracking_response.status_code == 200
+
+    applied_response = client.post(
+        "/job-applications/api-follow-up-register-001/tracking/status",
+        json={
+            "new_status": "APPLIED",
+            "note": "Candidatura enviada.",
+        },
+    )
+    assert applied_response.status_code == 200
+
+    first_follow_up_response = client.post(
+        "/job-applications/api-follow-up-register-001/follow-up/register"
+    )
+
+    assert first_follow_up_response.status_code == 200
+
+    first_application = first_follow_up_response.json()
+
+    assert first_application["tracking"]["followup_count"] == 1
+    assert (
+        first_application["tracking"]["last_followup_at"]
+        is not None
+    )
+
+    second_follow_up_response = client.post(
+        "/job-applications/api-follow-up-register-001/follow-up/register"
+    )
+
+    assert second_follow_up_response.status_code == 200
+
+    second_application = second_follow_up_response.json()
+
+    assert second_application["tracking"]["followup_count"] == 2
+    assert (
+        second_application["tracking"]["last_followup_at"]
+        is not None
+    )
+
+    recovered_response = client.get(
+        "/job-applications/api-follow-up-register-001"
+    )
+
+    assert recovered_response.status_code == 200
+
+    recovered_application = recovered_response.json()
+
+    assert recovered_application["tracking"]["followup_count"] == 2
+    assert (
+        recovered_application["tracking"]["last_followup_at"]
+        is not None
+    )
+
+    third_follow_up_response = client.post(
+        "/job-applications/api-follow-up-register-001/follow-up/register"
+    )
+
+    assert third_follow_up_response.status_code == 400
+    assert third_follow_up_response.json() == {
+        "error": "business_rule_violation",
+        "message": "O limite máximo de follow-ups já foi atingido.",
+    }
+
+    final_response = client.get(
+        "/job-applications/api-follow-up-register-001"
+    )
+
+    assert final_response.status_code == 200
+    assert (
+        final_response.json()["tracking"]["followup_count"]
+        == 2
+    )
+
+
 def test_get_job_application_metrics(monkeypatch):
     repository = InMemoryJobApplicationRepository()
 
