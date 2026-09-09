@@ -384,7 +384,7 @@ class JobOrchestrator:
         )
 
 
-    def should_follow_up_job_application(
+       def should_follow_up_job_application(
         self,
         application: JobApplicationObject,
         followup_count: int,
@@ -405,8 +405,7 @@ class JobOrchestrator:
             now=now,
         )
 
-
-        def register_job_application_follow_up(
+    def register_job_application_follow_up(
         self,
         application: JobApplicationObject,
         occurred_at=None,
@@ -451,7 +450,6 @@ class JobOrchestrator:
             application,
             tracking=updated_tracking,
         )
-
 
     def calculate_job_application_metrics(
         self,
