@@ -683,7 +683,7 @@ def test_recovered_application_remains_eligible_for_follow_up():
         "app-persistencia-009"
     )
 
-        assert recovered_application is not None
+    assert recovered_application is not None
     assert recovered_application.tracking is not None
 
     applied_events = [
