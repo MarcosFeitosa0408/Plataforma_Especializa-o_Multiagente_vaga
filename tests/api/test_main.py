@@ -1380,3 +1380,64 @@ def test_api_runs_persisted_application_pipeline(
     )
 
 
+def test_delete_stored_job_application():
+    application_id = "app-delete-api-001"
+
+    payload = {
+        "application_id": application_id,
+        "job": {
+            "job_id": "vaga-delete-api-001",
+            "title": "Analista de Dados Júnior",
+            "company": "Empresa Teste",
+            "source": "TESTE",
+            "location": "São Paulo",
+            "work_model": "HYBRID",
+            "employment_type": "CLT",
+            "requirements": [
+                "Power BI",
+                "SQL",
+                "Excel",
+                "Python",
+            ],
+        },
+    }
+
+    create_response = client.post(
+        "/job-applications",
+        json=payload,
+    )
+
+    assert create_response.status_code == 200
+
+    delete_response = client.delete(
+        f"/job-applications/{application_id}"
+    )
+
+    assert delete_response.status_code == 200
+    assert delete_response.json() == {
+        "application_id": application_id,
+        "deleted": True,
+    }
+
+    get_response = client.get(
+        f"/job-applications/{application_id}"
+    )
+
+    assert get_response.status_code == 404
+
+
+def test_delete_missing_job_application_returns_404():
+    response = client.delete(
+        "/job-applications/app-delete-inexistente"
+    )
+
+    assert response.status_code == 404
+
+    assert response.json()["detail"] == {
+        "message": "Candidatura não encontrada.",
+        "application_id": "app-delete-inexistente",
+    }
+
+
+
+
