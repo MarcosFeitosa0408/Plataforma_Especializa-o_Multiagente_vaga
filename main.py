@@ -210,7 +210,26 @@ def get_job_application(application_id: str):
         )
 
     return application
-    return application
+
+@app.delete("/job-applications/{application_id}")
+def delete_job_application(application_id: str):
+    deleted = orchestrator.delete_job_application(
+        application_id
+    )
+
+    if not deleted:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "message": "Candidatura não encontrada.",
+                "application_id": application_id,
+            },
+        )
+
+    return {
+        "application_id": application_id,
+        "deleted": True,
+    }
 
 
 @app.post("/job-applications/{application_id}/qualify")
