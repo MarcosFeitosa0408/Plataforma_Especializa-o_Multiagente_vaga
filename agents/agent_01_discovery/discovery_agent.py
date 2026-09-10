@@ -17,7 +17,7 @@ class DiscoveryAgent:
         seen_job_ids: set[str] = set()
         seen_job_keys: set[tuple[str, str, str, str]] = set()
 
-            for job in jobs:
+        for job in jobs:
             normalized_key = (
                 job.company.strip().casefold(),
                 job.title.strip().casefold(),
