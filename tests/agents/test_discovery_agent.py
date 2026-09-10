@@ -55,3 +55,46 @@ def test_discovery_agent_keeps_unique_jobs():
     result = agent.discover(jobs)
 
     assert len(result) == 2
+
+
+def test_discovery_agent_normalizes_raw_job():
+    raw_job = {
+        "job_id": "vaga-020",
+        "title": "Analista de Dados Júnior",
+        "company": "Empresa Teste",
+        "source": "TESTE",
+        "url": "https://example.com/vagas/020",
+        "location": "São Paulo/SP",
+        "work_model": "HYBRID",
+        "employment_type": "CLT",
+        "description": "Atuação com análise de dados e indicadores.",
+        "requirements": [
+            "Power BI",
+            "SQL",
+            "Excel",
+        ],
+        "desirable_requirements": [
+            "Python",
+        ],
+    }
+
+    agent = DiscoveryAgent()
+
+    result = agent.normalize_job(raw_job)
+
+    assert isinstance(result, JobOpportunity)
+    assert result.job_id == "vaga-020"
+    assert result.title == "Analista de Dados Júnior"
+    assert result.company == "Empresa Teste"
+    assert result.source == "TESTE"
+    assert result.location == "São Paulo/SP"
+    assert result.work_model == WorkModel.HYBRID
+    assert result.employment_type == "CLT"
+    assert result.requirements == [
+        "Power BI",
+        "SQL",
+        "Excel",
+    ]
+    assert result.desirable_requirements == [
+        "Python",
+    ]
