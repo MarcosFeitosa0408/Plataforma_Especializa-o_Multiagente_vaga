@@ -36,6 +36,14 @@ class DiscoveryAgent:
 
         return unique_jobs
 
+    def normalize_job(
+        self,
+        raw_job: dict,
+    ) -> JobOpportunity:
+        """Converte dados brutos de uma vaga em JobOpportunity validado."""
+
+        return JobOpportunity.model_validate(raw_job)
+
 
     def discover_raw(
         self,
