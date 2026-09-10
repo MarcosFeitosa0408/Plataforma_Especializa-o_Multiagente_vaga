@@ -98,3 +98,41 @@ def test_discovery_agent_normalizes_raw_job():
     assert result.desirable_requirements == [
         "Python",
     ]
+
+
+def test_discovery_agent_normalizes_and_deduplicates_raw_jobs():
+    raw_jobs = [
+        {
+            "job_id": "vaga-030",
+            "title": "Analista de Dados Júnior",
+            "company": "Empresa A",
+            "source": "FONTE_A",
+            "work_model": "HYBRID",
+        },
+        {
+            "job_id": "vaga-031",
+            "title": "Analista de BI Júnior",
+            "company": "Empresa B",
+            "source": "FONTE_B",
+            "work_model": "REMOTE",
+        },
+        {
+            "job_id": "vaga-030",
+            "title": "Analista de Dados Júnior",
+            "company": "Empresa A",
+            "source": "FONTE_DUPLICADA",
+            "work_model": "HYBRID",
+        },
+    ]
+
+    agent = DiscoveryAgent()
+
+    result = agent.discover_raw(raw_jobs)
+
+    assert len(result) == 2
+    assert all(
+        isinstance(job, JobOpportunity)
+        for job in result
+    )
+    assert result[0].job_id == "vaga-030"
+    assert result[1].job_id == "vaga-031"
