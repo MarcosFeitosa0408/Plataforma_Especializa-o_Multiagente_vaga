@@ -342,3 +342,50 @@ def test_adzuna_source_converts_api_response_to_raw_jobs():
     assert job["description"] == (
         "Atuação com Power BI, SQL e análise de dados."
     )
+
+
+def test_adzuna_source_fetches_and_normalizes_jobs(monkeypatch):
+    api_response = {
+        "results": [
+            {
+                "id": "adzuna-100",
+                "title": "Analista de BI Júnior",
+                "company": {
+                    "display_name": "Empresa Analytics",
+                },
+                "redirect_url": "https://example.com/vaga/adzuna-100",
+                "location": {
+                    "display_name": "São Paulo, São Paulo",
+                },
+                "description": "Vaga para atuação com Power BI e SQL.",
+            }
+        ]
+    }
+
+    class FakeResponse:
+        def raise_for_status(self):
+            pass
+
+        def json(self):
+            return api_response
+
+    def fake_get(*args, **kwargs):
+        return FakeResponse()
+
+    monkeypatch.setattr(
+        "agents.agent_01_discovery.sources.adzuna_source.httpx.get",
+        fake_get,
+    )
+
+    source = AdzunaJobSource(
+        app_id="test-app-id",
+        app_key="test-app-key",
+    )
+
+    result = source.fetch_jobs()
+
+    assert len(result) == 1
+    assert result[0]["job_id"] == "adzuna-100"
+    assert result[0]["title"] == "Analista de BI Júnior"
+    assert result[0]["company"] == "Empresa Analytics"
+    assert result[0]["source"] == "ADZUNA"
