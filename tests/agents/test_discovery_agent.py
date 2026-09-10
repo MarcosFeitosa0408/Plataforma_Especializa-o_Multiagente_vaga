@@ -1,4 +1,5 @@
 from agents.agent_01_discovery.discovery_agent import DiscoveryAgent
+from agents.agent_01_discovery.sources.adzuna_source import AdzunaJobSource
 from agents.agent_01_discovery.sources.base_source import BaseJobSource
 from core.schemas.job import JobOpportunity, WorkModel
 
@@ -301,3 +302,43 @@ def test_discovery_agent_processes_multiple_sources():
     assert "source-a-002" in job_ids
     assert "source-b-901" in job_ids
     assert "source-b-900" not in job_ids
+
+
+def test_adzuna_source_converts_api_response_to_raw_jobs():
+    api_response = {
+        "results": [
+            {
+                "id": "adzuna-001",
+                "title": "Analista de Dados Júnior",
+                "company": {
+                    "display_name": "Empresa Dados",
+                },
+                "redirect_url": "https://example.com/vaga/adzuna-001",
+                "location": {
+                    "display_name": "São Paulo, São Paulo",
+                },
+                "description": "Atuação com Power BI, SQL e análise de dados.",
+            }
+        ]
+    }
+
+    source = AdzunaJobSource(
+        app_id="test-app-id",
+        app_key="test-app-key",
+    )
+
+    result = source.normalize_response(api_response)
+
+    assert len(result) == 1
+
+    job = result[0]
+
+    assert job["job_id"] == "adzuna-001"
+    assert job["title"] == "Analista de Dados Júnior"
+    assert job["company"] == "Empresa Dados"
+    assert job["source"] == "ADZUNA"
+    assert job["url"] == "https://example.com/vaga/adzuna-001"
+    assert job["location"] == "São Paulo, São Paulo"
+    assert job["description"] == (
+        "Atuação com Power BI, SQL e análise de dados."
+    )
