@@ -1,5 +1,6 @@
 from collections.abc import Iterable
 
+from agents.agent_01_discovery.sources.base_source import BaseJobSource
 from core.schemas.job import JobOpportunity
 
 
@@ -57,6 +58,17 @@ class DiscoveryAgent:
         ]
 
         return self.deduplicate(normalized_jobs)
+
+    def discover_from_source(
+        self,
+        source: BaseJobSource,
+    ) -> list[JobOpportunity]:
+        """Coleta e processa vagas fornecidas por uma fonte externa."""
+
+        raw_jobs = source.fetch_jobs()
+
+        return self.discover_raw(raw_jobs)
+        
 
     def discover(
         self,
