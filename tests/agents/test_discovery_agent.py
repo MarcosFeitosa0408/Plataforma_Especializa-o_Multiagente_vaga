@@ -389,3 +389,44 @@ def test_adzuna_source_fetches_and_normalizes_jobs(monkeypatch):
     assert result[0]["title"] == "Analista de BI Júnior"
     assert result[0]["company"] == "Empresa Analytics"
     assert result[0]["source"] == "ADZUNA"
+
+
+def test_adzuna_source_sends_search_parameters(monkeypatch):
+    captured_request = {}
+
+    class FakeResponse:
+        def raise_for_status(self):
+            pass
+
+        def json(self):
+            return {
+                "results": [],
+            }
+
+    def fake_get(url, params, timeout):
+        captured_request["url"] = url
+        captured_request["params"] = params
+        captured_request["timeout"] = timeout
+
+        return FakeResponse()
+
+    monkeypatch.setattr(
+        "agents.agent_01_discovery.sources.adzuna_source.httpx.get",
+        fake_get,
+    )
+
+    source = AdzunaJobSource(
+        app_id="test-app-id",
+        app_key="test-app-key",
+        query="Analista de Dados",
+        location="São Paulo",
+    )
+
+    result = source.fetch_jobs()
+
+    assert result == []
+
+    assert captured_request["params"]["app_id"] == "test-app-id"
+    assert captured_request["params"]["app_key"] == "test-app-key"
+    assert captured_request["params"]["what"] == "Analista de Dados"
+    assert captured_request["params"]["where"] == "São Paulo"
