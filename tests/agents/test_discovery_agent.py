@@ -1,4 +1,5 @@
 from agents.agent_01_discovery.discovery_agent import DiscoveryAgent
+from agents.agent_01_discovery.sources.base_source import BaseJobSource
 from core.schemas.job import JobOpportunity, WorkModel
 
 
@@ -197,3 +198,39 @@ def test_discovery_agent_normalizes_job_with_optional_fields_missing():
     assert result.description == ""
     assert result.requirements == []
     assert result.desirable_requirements == []
+
+
+def test_discovery_agent_processes_jobs_from_source():
+    class FakeJobSource(BaseJobSource):
+        def fetch_jobs(self):
+            return [
+                {
+                    "job_id": "source-001",
+                    "title": "Analista de Dados Júnior",
+                    "company": "Empresa Source",
+                    "source": "FAKE_SOURCE",
+                    "work_model": "HYBRID",
+                },
+                {
+                    "job_id": "source-002",
+                    "title": "Analista de BI Júnior",
+                    "company": "Empresa Source",
+                    "source": "FAKE_SOURCE",
+                    "work_model": "REMOTE",
+                },
+            ]
+
+    source = FakeJobSource()
+    agent = DiscoveryAgent()
+
+    result = agent.discover_from_source(source)
+
+    assert len(result) == 2
+    assert all(
+        isinstance(job, JobOpportunity)
+        for job in result
+    )
+    assert result[0].job_id == "source-001"
+    assert result[1].job_id == "source-002"
+
+
