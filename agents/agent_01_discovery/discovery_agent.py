@@ -10,23 +10,31 @@ class DiscoveryAgent:
         self,
         jobs: Iterable[JobOpportunity],
     ) -> list[JobOpportunity]:
-        """Remove vagas duplicadas usando job_id como chave principal."""
+        """Remove vagas duplicadas por ID ou identidade normalizada."""
 
-        unique_jobs: dict[str, JobOpportunity] = {}
+        unique_jobs: list[JobOpportunity] = []
+        seen_job_ids: set[str] = set()
+        seen_job_keys: set[tuple[str, str, str, str]] = set()
 
         for job in jobs:
-            if job.job_id not in unique_jobs:
-                unique_jobs[job.job_id] = job
+            normalized_key = (
+                job.company.strip().casefold(),
+                job.title.strip().casefold(),
+                job.location.strip().casefold(),
+                job.work_model.value,
+            )
 
-        return list(unique_jobs.values())
+            if (
+                job.job_id in seen_job_ids
+                or normalized_key in seen_job_keys
+            ):
+                continue
 
-    def normalize_job(
-        self,
-        raw_job: dict,
-    ) -> JobOpportunity:
-        """Converte dados brutos de uma vaga em JobOpportunity validado."""
+            seen_job_ids.add(job.job_id)
+            seen_job_keys.add(normalized_key)
+            unique_jobs.append(job)
 
-        return JobOpportunity.model_validate(raw_job)
+        return unique_jobs
 
 
     def discover_raw(
