@@ -17,7 +17,7 @@ class DiscoveryAgent:
         seen_job_ids: set[str] = set()
         seen_job_keys: set[tuple[str, str, str, str]] = set()
 
-        for job in jobs:
+            for job in jobs:
             normalized_key = (
                 job.company.strip().casefold(),
                 job.title.strip().casefold(),
@@ -66,6 +66,20 @@ class DiscoveryAgent:
         """Coleta e processa vagas fornecidas por uma fonte externa."""
 
         raw_jobs = source.fetch_jobs()
+
+        return self.discover_raw(raw_jobs)
+
+
+    def discover_from_sources(
+        self,
+        sources: Iterable[BaseJobSource],
+    ) -> list[JobOpportunity]:
+        """Coleta, normaliza e consolida vagas de múltiplas fontes."""
+
+        raw_jobs: list[dict] = []
+
+        for source in sources:
+            raw_jobs.extend(source.fetch_jobs())
 
         return self.discover_raw(raw_jobs)
         
