@@ -12,9 +12,13 @@ class AdzunaJobSource(BaseJobSource):
         self,
         app_id: str,
         app_key: str,
+        query: str = "",
+        location: str = "",
     ):
         self.app_id = app_id
         self.app_key = app_key
+        self.query = query
+        self.location = location
 
     def fetch_jobs(self):
         """Coleta vagas da API da Adzuna e normaliza a resposta."""
@@ -24,6 +28,8 @@ class AdzunaJobSource(BaseJobSource):
             params={
                 "app_id": self.app_id,
                 "app_key": self.app_key,
+                "what": self.query,
+                "where": self.location,
             },
             timeout=10.0,
         )
