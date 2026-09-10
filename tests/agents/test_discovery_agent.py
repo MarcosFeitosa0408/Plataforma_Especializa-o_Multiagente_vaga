@@ -136,3 +136,46 @@ def test_discovery_agent_normalizes_and_deduplicates_raw_jobs():
     )
     assert result[0].job_id == "vaga-030"
     assert result[1].job_id == "vaga-031"
+
+
+def test_discovery_agent_removes_cross_source_duplicates():
+    jobs = [
+        JobOpportunity(
+            job_id="linkedin-123",
+            title="Analista de Dados Júnior",
+            company="Empresa Alpha",
+            source="LINKEDIN",
+            location="São Paulo/SP",
+            work_model=WorkModel.HYBRID,
+        ),
+        JobOpportunity(
+            job_id="gupy-987",
+            title="  analista de dados júnior  ",
+            company="EMPRESA ALPHA",
+            source="GUPY",
+            location="são paulo/sp",
+            work_model=WorkModel.HYBRID,
+        ),
+        JobOpportunity(
+            job_id="gupy-988",
+            title="Analista de BI Júnior",
+            company="Empresa Beta",
+            source="GUPY",
+            location="São Paulo/SP",
+            work_model=WorkModel.REMOTE,
+        ),
+    ]
+
+    agent = DiscoveryAgent()
+
+    result = agent.discover(jobs)
+
+    assert len(result) == 2
+    assert result[0].job_id == "linkedin-123"
+    assert result[1].job_id == "gupy-988"
+
+
+
+
+
+
