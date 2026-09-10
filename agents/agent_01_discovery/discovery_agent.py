@@ -28,6 +28,20 @@ class DiscoveryAgent:
 
         return JobOpportunity.model_validate(raw_job)
 
+
+    def discover_raw(
+        self,
+        raw_jobs: Iterable[dict],
+    ) -> list[JobOpportunity]:
+        """Normaliza e remove duplicidades de vagas brutas."""
+
+        normalized_jobs = [
+            self.normalize_job(raw_job)
+            for raw_job in raw_jobs
+        ]
+
+        return self.deduplicate(normalized_jobs)
+
     def discover(
         self,
         jobs: Iterable[JobOpportunity],
