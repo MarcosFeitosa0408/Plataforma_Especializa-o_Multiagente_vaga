@@ -807,3 +807,131 @@ def test_metrics_are_calculated_from_persisted_applications():
     assert metrics["interview_rate"] == 0.0
     assert metrics["offer_rate"] == 0.0
     assert metrics["hire_rate"] == 0.0
+
+
+def test_follow_up_respects_first_and_second_waiting_periods():
+    orchestrator = JobOrchestrator()
+
+    job = JobOpportunity(
+        job_id="vaga-follow-up-timing-010",
+        title="Analista de Dados Júnior",
+        company="Empresa Teste",
+        source="TESTE",
+        location="São Paulo",
+        work_model=WorkModel.HYBRID,
+        employment_type="CLT",
+        requirements=[
+            "Power BI",
+            "SQL",
+            "Excel",
+            "Python",
+            "DAX",
+        ],
+    )
+
+    application = orchestrator.create_job_application(
+        job=job,
+        application_id="app-follow-up-timing-010",
+    )
+
+    qualified_application = (
+        orchestrator.qualify_job_application(
+            application
+        )
+    )
+
+    personalized_application = (
+        orchestrator.personalize_job_application(
+            qualified_application
+        )
+    )
+
+    prepared_application = (
+        orchestrator.prepare_job_application(
+            personalized_application
+        )
+    )
+
+    approved_application = (
+        orchestrator.approve_job_application(
+            prepared_application
+        )
+    )
+
+    tracked_application = (
+        orchestrator.start_job_application_tracking(
+            approved_application
+        )
+    )
+
+    applied_application = (
+        orchestrator.update_job_application_status(
+            tracked_application,
+            JobStatus.APPLIED,
+            "Candidatura enviada.",
+        )
+    )
+
+    applied_events = [
+        event
+        for event in applied_application.tracking.history
+        if event.status == JobStatus.APPLIED
+    ]
+
+    assert applied_events
+
+    applied_at = applied_events[-1].occurred_at
+
+    first_follow_up_at = applied_at + timedelta(
+        days=5
+    )
+
+    first_follow_up = (
+        orchestrator.register_job_application_follow_up(
+            applied_application,
+            occurred_at=first_follow_up_at,
+        )
+    )
+
+    assert first_follow_up.tracking.followup_count == 1
+    assert (
+        first_follow_up.tracking.last_followup_at
+        == first_follow_up_at
+    )
+
+    too_early_for_second = (
+        first_follow_up_at + timedelta(days=6)
+    )
+
+    assert (
+        orchestrator.should_follow_up_job_application(
+            first_follow_up,
+            now=too_early_for_second,
+        )
+        is False
+    )
+
+    second_follow_up_at = (
+        first_follow_up_at + timedelta(days=7)
+    )
+
+    second_follow_up = (
+        orchestrator.register_job_application_follow_up(
+            first_follow_up,
+            occurred_at=second_follow_up_at,
+        )
+    )
+
+    assert second_follow_up.tracking.followup_count == 2
+    assert (
+        second_follow_up.tracking.last_followup_at
+        == second_follow_up_at
+    )
+
+    assert (
+        orchestrator.should_follow_up_job_application(
+            second_follow_up,
+            now=second_follow_up_at + timedelta(days=7),
+        )
+        is False
+    )
