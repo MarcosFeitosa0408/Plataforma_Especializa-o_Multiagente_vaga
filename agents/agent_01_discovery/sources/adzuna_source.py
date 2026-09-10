@@ -1,8 +1,12 @@
+import httpx
+
 from agents.agent_01_discovery.sources.base_source import BaseJobSource
 
 
 class AdzunaJobSource(BaseJobSource):
     """Fonte de vagas baseada na API da Adzuna."""
+
+    BASE_URL = "https://api.adzuna.com/v1/api/jobs/br/search/1"
 
     def __init__(
         self,
@@ -13,9 +17,22 @@ class AdzunaJobSource(BaseJobSource):
         self.app_key = app_key
 
     def fetch_jobs(self):
-        """A coleta real da API será implementada na próxima etapa."""
+        """Coleta vagas da API da Adzuna e normaliza a resposta."""
 
-        return []
+        response = httpx.get(
+            self.BASE_URL,
+            params={
+                "app_id": self.app_id,
+                "app_key": self.app_key,
+            },
+            timeout=10.0,
+        )
+
+        response.raise_for_status()
+
+        return self.normalize_response(
+            response.json()
+        )
 
     def normalize_response(
         self,
