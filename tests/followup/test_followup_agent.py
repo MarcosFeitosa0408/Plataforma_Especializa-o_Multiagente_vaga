@@ -108,3 +108,24 @@ def test_second_followup_is_allowed_after_seven_days():
     )
 
     assert result is True
+
+
+def test_second_followup_is_blocked_before_seven_days():
+    agent = FollowUpAgent()
+
+    now = datetime.now(timezone.utc)
+    last_contact = now - timedelta(days=6)
+
+    tracking = ApplicationTracking(
+        job_id="followup-006",
+        current_status=JobStatus.SCREENING,
+    )
+
+    result = agent.should_follow_up(
+        tracking=tracking,
+        followup_count=1,
+        last_contact_at=last_contact,
+        now=now,
+    )
+
+    assert result is False
