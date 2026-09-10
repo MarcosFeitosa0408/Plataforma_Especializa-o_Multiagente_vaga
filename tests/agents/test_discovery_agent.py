@@ -175,7 +175,25 @@ def test_discovery_agent_removes_cross_source_duplicates():
     assert result[1].job_id == "gupy-988"
 
 
+def test_discovery_agent_normalizes_job_with_optional_fields_missing():
+    raw_job = {
+        "job_id": "vaga-040",
+        "title": "Analista de Dados",
+        "company": "Empresa Teste",
+        "source": "FONTE_TESTE",
+    }
 
+    agent = DiscoveryAgent()
 
+    result = agent.normalize_job(raw_job)
 
-
+    assert result.job_id == "vaga-040"
+    assert result.title == "Analista de Dados"
+    assert result.company == "Empresa Teste"
+    assert result.source == "FONTE_TESTE"
+    assert result.location == "NAO_IDENTIFICADO"
+    assert result.work_model == WorkModel.UNKNOWN
+    assert result.employment_type == "NAO_IDENTIFICADO"
+    assert result.description == ""
+    assert result.requirements == []
+    assert result.desirable_requirements == []
