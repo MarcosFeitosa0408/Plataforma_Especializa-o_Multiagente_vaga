@@ -234,3 +234,70 @@ def test_discovery_agent_processes_jobs_from_source():
     assert result[1].job_id == "source-002"
 
 
+def test_discovery_agent_processes_multiple_sources():
+    class SourceA(BaseJobSource):
+        def fetch_jobs(self):
+            return [
+                {
+                    "job_id": "source-a-001",
+                    "title": "Analista de Dados Júnior",
+                    "company": "Empresa Alpha",
+                    "source": "SOURCE_A",
+                    "location": "São Paulo/SP",
+                    "work_model": "HYBRID",
+                },
+                {
+                    "job_id": "source-a-002",
+                    "title": "Analista de BI Júnior",
+                    "company": "Empresa Beta",
+                    "source": "SOURCE_A",
+                    "location": "São Paulo/SP",
+                    "work_model": "REMOTE",
+                },
+            ]
+
+    class SourceB(BaseJobSource):
+        def fetch_jobs(self):
+            return [
+                {
+                    "job_id": "source-b-900",
+                    "title": "  analista de dados júnior  ",
+                    "company": "EMPRESA ALPHA",
+                    "source": "SOURCE_B",
+                    "location": "são paulo/sp",
+                    "work_model": "HYBRID",
+                },
+                {
+                    "job_id": "source-b-901",
+                    "title": "Analista de Performance",
+                    "company": "Empresa Gamma",
+                    "source": "SOURCE_B",
+                    "location": "São Paulo/SP",
+                    "work_model": "HYBRID",
+                },
+            ]
+
+    agent = DiscoveryAgent()
+
+    result = agent.discover_from_sources(
+        [
+            SourceA(),
+            SourceB(),
+        ]
+    )
+
+    assert len(result) == 3
+    assert all(
+        isinstance(job, JobOpportunity)
+        for job in result
+    )
+
+    job_ids = [
+        job.job_id
+        for job in result
+    ]
+
+    assert "source-a-001" in job_ids
+    assert "source-a-002" in job_ids
+    assert "source-b-901" in job_ids
+    assert "source-b-900" not in job_ids
