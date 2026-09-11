@@ -146,3 +146,30 @@ class QualificationAgent:
             return "FILA_SECUNDARIA"
 
         return "NAO_RECOMENDADA"
+
+
+def test_qualification_agent_handles_job_without_requirements():
+    profile = MemoryAgent().load_profile()
+
+    job = JobOpportunity(
+        job_id="vaga-fit-003",
+        title="Analista de Dados Júnior",
+        company="Empresa Teste",
+        source="TESTE",
+        location="São Paulo",
+        work_model=WorkModel.HYBRID,
+        employment_type="CLT",
+        requirements=[],
+    )
+
+    result = QualificationAgent().calculate_fit(
+        job,
+        profile,
+    )
+
+    assert 0 <= result.fit_score <= 10
+    assert result.matched_skills == []
+    assert result.missing_skills == []
+    assert result.breakdown.technical_skills == 5.0
+    assert result.breakdown.seniority == 10.0
+    assert result.breakdown.location_work_model == 10.0
