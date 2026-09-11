@@ -533,3 +533,22 @@ def test_greenhouse_boards_create_job_sources():
 
     assert bees_source.board_token == "bees"
     assert bees_source.company_name == "BEES"
+
+
+def test_discovery_agent_builds_configured_greenhouse_sources():
+    agent = DiscoveryAgent()
+
+    sources = agent.build_greenhouse_sources(
+        GREENHOUSE_BOARDS
+    )
+
+    assert len(sources) >= 1
+    assert all(
+        isinstance(source, GreenhouseJobSource)
+        for source in sources
+    )
+
+    bees_source = sources[0]
+
+    assert bees_source.board_token == "bees"
+    assert bees_source.company_name == "BEES"
