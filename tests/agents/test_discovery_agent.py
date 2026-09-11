@@ -2,8 +2,8 @@ from agents.agent_01_discovery.discovery_agent import DiscoveryAgent
 from agents.agent_01_discovery.sources.adzuna_source import AdzunaJobSource
 from agents.agent_01_discovery.sources.base_source import BaseJobSource
 from agents.agent_01_discovery.sources.greenhouse_source import GreenhouseJobSource
+from config.greenhouse_boards import GREENHOUSE_BOARDS
 from core.schemas.job import JobOpportunity, WorkModel
-
 
 def test_discovery_agent_removes_duplicate_jobs():
     jobs = [
@@ -512,3 +512,24 @@ def test_greenhouse_source_fetches_and_normalizes_jobs(monkeypatch):
     assert result[0]["title"] == "Analista de Dados"
     assert result[0]["company"] == "Empresa Teste"
     assert result[0]["source"] == "GREENHOUSE"
+
+
+def test_greenhouse_boards_create_job_sources():
+    sources = [
+        GreenhouseJobSource(
+            board_token=board["board_token"],
+            company_name=board["company_name"],
+        )
+        for board in GREENHOUSE_BOARDS
+    ]
+
+    assert len(sources) >= 1
+    assert all(
+        isinstance(source, GreenhouseJobSource)
+        for source in sources
+    )
+
+    bees_source = sources[0]
+
+    assert bees_source.board_token == "bees"
+    assert bees_source.company_name == "BEES"
