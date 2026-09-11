@@ -64,3 +64,36 @@ def test_qualification_agent_rejects_low_fit_job():
     assert result.recommendation == "NAO_RECOMENDADA"
     assert len(result.matched_skills) == 0
     assert len(result.missing_skills) == 4
+
+
+def test_qualification_agent_scores_responsibilities_independently():
+    profile = MemoryAgent().load_profile()
+
+    job = JobOpportunity(
+        job_id="vaga-fit-003",
+        title="Analista de Dados Júnior",
+        company="Empresa Teste",
+        source="TESTE",
+        location="São Paulo",
+        work_model=WorkModel.HYBRID,
+        employment_type="CLT",
+        requirements=[
+            "Power BI",
+            "SQL",
+        ],
+        description=(
+            "Responsável por análise de dados, "
+            "desenvolvimento de dashboards, "
+            "acompanhamento de KPIs e ETL."
+        ),
+    )
+
+    result = QualificationAgent().calculate_fit(
+        job,
+        profile,
+    )
+
+    assert result.breakdown.technical_skills == 10.0
+    assert result.breakdown.responsibilities == 10.0
+    assert result.fit_score >= 7.0
+    assert result.recommendation == "RECOMENDADA"
