@@ -1,8 +1,12 @@
+import httpx
+
 from agents.agent_01_discovery.sources.base_source import BaseJobSource
 
 
 class GreenhouseJobSource(BaseJobSource):
     """Fonte de vagas baseada na Greenhouse Job Board API."""
+
+    BASE_URL = "https://boards-api.greenhouse.io/v1/boards"
 
     def __init__(
         self,
@@ -13,9 +17,26 @@ class GreenhouseJobSource(BaseJobSource):
         self.company_name = company_name
 
     def fetch_jobs(self):
-        """A coleta real da Greenhouse será implementada na próxima etapa."""
+        """Coleta vagas públicas da Greenhouse e normaliza a resposta."""
 
-        return []
+        url = (
+            f"{self.BASE_URL}/"
+            f"{self.board_token}/jobs"
+        )
+
+        response = httpx.get(
+            url,
+            params={
+                "content": "true",
+            },
+            timeout=10.0,
+        )
+
+        response.raise_for_status()
+
+        return self.normalize_response(
+            response.json()
+        )
 
     def normalize_response(
         self,
