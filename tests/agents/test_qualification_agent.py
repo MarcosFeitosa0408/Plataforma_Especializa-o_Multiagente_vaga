@@ -127,3 +127,12 @@ def test_qualification_agent_detects_senior_role_as_gap():
     assert result.breakdown.seniority < 10.0
     assert "SENIORIDADE_INCOMPATIVEL" in result.eliminatory_gaps
     assert result.recommendation == "NAO_RECOMENDADA"
+
+
+def test_qualification_agent_uses_secondary_queue_for_medium_fit():
+    agent = QualificationAgent()
+
+    assert agent._recommend(6.5) == "FILA_SECUNDARIA"
+    assert agent._recommend(6.9) == "FILA_SECUNDARIA"
+    assert agent._recommend(7.0) == "RECOMENDADA"
+    assert agent._recommend(6.49) == "NAO_RECOMENDADA"
