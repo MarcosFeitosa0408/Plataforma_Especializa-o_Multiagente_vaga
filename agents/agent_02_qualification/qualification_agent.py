@@ -56,6 +56,11 @@ class QualificationAgent:
         location_score = self._score_location(job, profile)
         ats_score = technical_score
 
+        eliminatory_gaps = self._detect_eliminatory_gaps(
+            job,
+            profile,
+        )
+
         breakdown = QualificationBreakdown(
             technical_skills=round(technical_score, 2),
             professional_experience=round(experience_score, 2),
@@ -81,7 +86,23 @@ class QualificationAgent:
             2,
         )
 
-        recommendation = self._recommend(fit_score)
+        recommendation = self._recommend(
+            fit_score,
+            eliminatory_gaps,
+        )
+
+        reasoning = [
+            f"{len(matched)} requisito(s) técnico(s) compatível(is).",
+            f"{len(missing)} requisito(s) técnico(s) não identificado(s).",
+            f"Fit calculado: {fit_score}/10.",
+        ]
+
+        if eliminatory_gaps:
+            reasoning.append(
+                "Gap eliminatório identificado: "
+                + ", ".join(eliminatory_gaps)
+                + "."
+            )
 
         return QualificationResult(
             job_id=job.job_id,
@@ -89,13 +110,9 @@ class QualificationAgent:
             recommendation=recommendation,
             matched_skills=matched,
             missing_skills=missing,
-            eliminatory_gaps=[],
+            eliminatory_gaps=eliminatory_gaps,
             breakdown=breakdown,
-            reasoning=[
-                f"{len(matched)} requisito(s) técnico(s) compatível(is).",
-                f"{len(missing)} requisito(s) técnico(s) não identificado(s).",
-                f"Fit calculado: {fit_score}/10.",
-            ],
+            reasoning=reasoning,
         )
 
     def _score_seniority(
@@ -138,7 +155,39 @@ class QualificationAgent:
 
         return 4.0
 
-    def _recommend(self, fit_score: float) -> str:
+    def _detect_eliminatory_gaps(
+        self,
+        job: JobOpportunity,
+        profile: MasterProfile,
+    ) -> list[str]:
+        gaps: list[str] = []
+
+        title = job.title.lower()
+
+        senior_role = (
+            "sênior" in title
+            or "senior" in title
+        )
+
+        candidate_targets_senior = any(
+            "sênior" in seniority.lower()
+            or "senior" in seniority.lower()
+            for seniority in profile.candidate.career_target.seniority
+        )
+
+        if senior_role and not candidate_targets_senior:
+            gaps.append("SENIORIDADE_INCOMPATIVEL")
+
+        return gaps
+
+    def _recommend(
+        self,
+        fit_score: float,
+        eliminatory_gaps: list[str],
+    ) -> str:
+        if eliminatory_gaps:
+            return "NAO_RECOMENDADA"
+
         if fit_score >= 7.0:
             return "RECOMENDADA"
 
@@ -146,30 +195,3 @@ class QualificationAgent:
             return "FILA_SECUNDARIA"
 
         return "NAO_RECOMENDADA"
-
-
-def test_qualification_agent_handles_job_without_requirements():
-    profile = MemoryAgent().load_profile()
-
-    job = JobOpportunity(
-        job_id="vaga-fit-003",
-        title="Analista de Dados Júnior",
-        company="Empresa Teste",
-        source="TESTE",
-        location="São Paulo",
-        work_model=WorkModel.HYBRID,
-        employment_type="CLT",
-        requirements=[],
-    )
-
-    result = QualificationAgent().calculate_fit(
-        job,
-        profile,
-    )
-
-    assert 0 <= result.fit_score <= 10
-    assert result.matched_skills == []
-    assert result.missing_skills == []
-    assert result.breakdown.technical_skills == 5.0
-    assert result.breakdown.seniority == 10.0
-    assert result.breakdown.location_work_model == 10.0
