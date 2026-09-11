@@ -97,3 +97,33 @@ def test_qualification_agent_scores_responsibilities_independently():
     assert result.breakdown.responsibilities == 10.0
     assert result.fit_score >= 7.0
     assert result.recommendation == "RECOMENDADA"
+    
+    
+def test_qualification_agent_detects_senior_role_as_gap():
+    profile = MemoryAgent().load_profile()
+
+    job = JobOpportunity(
+        job_id="vaga-fit-003",
+        title="Analista de Dados Sênior",
+        company="Empresa Teste",
+        source="TESTE",
+        location="São Paulo",
+        work_model=WorkModel.HYBRID,
+        employment_type="CLT",
+        requirements=[
+            "Power BI",
+            "SQL",
+            "Python",
+            "Excel",
+        ],
+    )
+
+    result = QualificationAgent().calculate_fit(
+        job,
+        profile,
+    )
+
+    assert result.breakdown.technical_skills == 10.0
+    assert result.breakdown.seniority < 10.0
+    assert "SENIORIDADE_INCOMPATIVEL" in result.eliminatory_gaps
+    assert result.recommendation == "NAO_RECOMENDADA"
