@@ -552,3 +552,54 @@ def test_discovery_agent_builds_configured_greenhouse_sources():
 
     assert bees_source.board_token == "bees"
     assert bees_source.company_name == "BEES"
+
+
+def test_discovery_agent_discovers_from_configured_greenhouse_boards(
+    monkeypatch,
+):
+    api_response = {
+        "jobs": [
+            {
+                "id": 900001,
+                "title": "Analista de Dados",
+                "location": {
+                    "name": "São Paulo, Brazil",
+                },
+                "absolute_url": "https://example.com/jobs/900001",
+                "content": "Atuação com Power BI, SQL e análise de dados.",
+            }
+        ]
+    }
+
+    class FakeResponse:
+        def raise_for_status(self):
+            pass
+
+        def json(self):
+            return api_response
+
+    def fake_get(*args, **kwargs):
+        return FakeResponse()
+
+    monkeypatch.setattr(
+        "agents.agent_01_discovery.sources.greenhouse_source.httpx.get",
+        fake_get,
+    )
+
+    agent = DiscoveryAgent()
+
+    sources = agent.build_greenhouse_sources(
+        GREENHOUSE_BOARDS
+    )
+
+    result = agent.discover_from_sources(
+        sources
+    )
+
+    assert len(result) == 1
+    assert isinstance(result[0], JobOpportunity)
+    assert result[0].job_id == "greenhouse-900001"
+    assert result[0].title == "Analista de Dados"
+    assert result[0].company == "BEES"
+    assert result[0].source == "GREENHOUSE"
+    assert result[0].location == "São Paulo, Brazil"
