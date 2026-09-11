@@ -1,6 +1,7 @@
 from agents.agent_01_discovery.discovery_agent import DiscoveryAgent
 from agents.agent_01_discovery.sources.adzuna_source import AdzunaJobSource
 from agents.agent_01_discovery.sources.base_source import BaseJobSource
+from agents.agent_01_discovery.sources.greenhouse_source import GreenhouseJobSource
 from core.schemas.job import JobOpportunity, WorkModel
 
 
@@ -430,3 +431,40 @@ def test_adzuna_source_sends_search_parameters(monkeypatch):
     assert captured_request["params"]["app_key"] == "test-app-key"
     assert captured_request["params"]["what"] == "Analista de Dados"
     assert captured_request["params"]["where"] == "São Paulo"
+
+
+def test_greenhouse_source_converts_api_response_to_raw_jobs():
+    api_response = {
+        "jobs": [
+            {
+                "id": 123456,
+                "title": "Data Analyst",
+                "location": {
+                    "name": "São Paulo, Brazil",
+                },
+                "absolute_url": "https://example.com/jobs/123456",
+                "content": "Atuação com análise de dados, SQL e Power BI.",
+            }
+        ]
+    }
+
+    source = GreenhouseJobSource(
+        board_token="empresa-teste",
+        company_name="Empresa Teste",
+    )
+
+    result = source.normalize_response(api_response)
+
+    assert len(result) == 1
+
+    job = result[0]
+
+    assert job["job_id"] == "greenhouse-123456"
+    assert job["title"] == "Data Analyst"
+    assert job["company"] == "Empresa Teste"
+    assert job["source"] == "GREENHOUSE"
+    assert job["url"] == "https://example.com/jobs/123456"
+    assert job["location"] == "São Paulo, Brazil"
+    assert job["description"] == (
+        "Atuação com análise de dados, SQL e Power BI."
+    )
