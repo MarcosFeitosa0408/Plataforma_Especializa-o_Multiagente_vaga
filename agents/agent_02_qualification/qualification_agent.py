@@ -180,11 +180,13 @@ class QualificationAgent:
 
         return gaps
 
-    def _recommend(
+        def _recommend(
         self,
         fit_score: float,
-        eliminatory_gaps: list[str],
+        eliminatory_gaps: list[str] | None = None,
     ) -> str:
+        eliminatory_gaps = eliminatory_gaps or []
+
         if eliminatory_gaps:
             return "NAO_RECOMENDADA"
 
