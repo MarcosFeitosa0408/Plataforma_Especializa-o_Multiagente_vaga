@@ -1,6 +1,7 @@
 from collections.abc import Iterable
 
 from agents.agent_01_discovery.sources.base_source import BaseJobSource
+from agents.agent_01_discovery.sources.greenhouse_source import GreenhouseJobSource
 from core.schemas.job import JobOpportunity
 
 
@@ -69,7 +70,6 @@ class DiscoveryAgent:
 
         return self.discover_raw(raw_jobs)
 
-
     def discover_from_sources(
         self,
         sources: Iterable[BaseJobSource],
@@ -83,7 +83,6 @@ class DiscoveryAgent:
 
         return self.discover_raw(raw_jobs)
         
-
     def discover(
         self,
         jobs: Iterable[JobOpportunity],
@@ -91,3 +90,19 @@ class DiscoveryAgent:
         """Executa a primeira etapa do pipeline de descoberta."""
 
         return self.deduplicate(jobs)
+
+
+    def build_greenhouse_sources(
+        self,
+        boards: Iterable[dict],
+    ) -> list[GreenhouseJobSource]:
+        """Cria fontes Greenhouse a partir dos boards configurados."""
+
+        return [
+            GreenhouseJobSource(
+                board_token=board["board_token"],
+                company_name=board["company_name"],
+            )
+            for board in boards
+        ]
+
