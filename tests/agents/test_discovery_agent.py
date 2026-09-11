@@ -468,3 +468,47 @@ def test_greenhouse_source_converts_api_response_to_raw_jobs():
     assert job["description"] == (
         "Atuação com análise de dados, SQL e Power BI."
     )
+
+
+def test_greenhouse_source_fetches_and_normalizes_jobs(monkeypatch):
+    api_response = {
+        "jobs": [
+            {
+                "id": 789012,
+                "title": "Analista de Dados",
+                "location": {
+                    "name": "São Paulo, Brazil",
+                },
+                "absolute_url": "https://example.com/jobs/789012",
+                "content": "Atuação com SQL, Power BI e indicadores.",
+            }
+        ]
+    }
+
+    class FakeResponse:
+        def raise_for_status(self):
+            pass
+
+        def json(self):
+            return api_response
+
+    def fake_get(*args, **kwargs):
+        return FakeResponse()
+
+    monkeypatch.setattr(
+        "agents.agent_01_discovery.sources.greenhouse_source.httpx.get",
+        fake_get,
+    )
+
+    source = GreenhouseJobSource(
+        board_token="empresa-teste",
+        company_name="Empresa Teste",
+    )
+
+    result = source.fetch_jobs()
+
+    assert len(result) == 1
+    assert result[0]["job_id"] == "greenhouse-789012"
+    assert result[0]["title"] == "Analista de Dados"
+    assert result[0]["company"] == "Empresa Teste"
+    assert result[0]["source"] == "GREENHOUSE"
