@@ -155,3 +155,10 @@ def test_qualification_agent_blocks_secondary_queue_with_eliminatory_gap():
         6.9,
         ["REQUISITO_ELIMINATORIO"],
     ) == "NAO_RECOMENDADA"
+
+
+def test_qualification_agent_uses_secondary_queue_for_medium_fit():
+    agent = QualificationAgent()
+
+    assert agent._recommend(6.5, []) == "FILA_SECUNDARIA"
+    assert agent._recommend(6.9, []) == "FILA_SECUNDARIA"
