@@ -94,7 +94,7 @@ def test_analyze_job():
     data = response.json()
 
     assert data["job_id"] == "teste-api-001"
-    assert data["recommendation"] == "RECOMENDADA"
+    assert data["recommendation"] == "FILA_PRINCIPAL"
     assert data["fit_score"] >= 7.0
     assert "power bi" in data["matched_skills"]
     assert "sql" in data["matched_skills"]
