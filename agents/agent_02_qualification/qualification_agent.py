@@ -24,7 +24,7 @@ class QualificationAgent:
         profile: MasterProfile,
     ) -> QualificationResult:
         candidate_skills = {
-            skill.lower()
+            self._normalize_text(skill)
             for skill in (
                 profile.skills.core
                 + profile.skills.database
@@ -36,23 +36,22 @@ class QualificationAgent:
         }
 
         job_requirements = {
-            requirement.lower()
+            self._normalize_text(requirement)
             for requirement in job.requirements
         }
 
         matched = sorted(
             candidate_skills & job_requirements
         )
+
         missing = sorted(
             job_requirements - candidate_skills
         )
 
-        if job_requirements:
-            technical_score = (
-                len(matched) / len(job_requirements)
-            ) * 10
-        else:
-            technical_score = 5.0
+        technical_score = self._score_technical(
+            matched=matched,
+            requirements=job_requirements,
+        )
 
         experience_score = (
             7.0
@@ -60,12 +59,7 @@ class QualificationAgent:
             else 0.0
         )
 
-        responsibilities_score = (
-            self._score_responsibilities(
-                job,
-                profile,
-            )
-        )
+        responsibilities_score = technical_score
 
         seniority_score = self._score_seniority(
             job,
@@ -78,13 +72,6 @@ class QualificationAgent:
         )
 
         ats_score = technical_score
-
-        eliminatory_gaps = (
-            self._detect_eliminatory_gaps(
-                job,
-                profile,
-            )
-        )
 
         breakdown = QualificationBreakdown(
             technical_skills=round(
@@ -129,6 +116,10 @@ class QualificationAgent:
             2,
         )
 
+        # O schema atual da vaga não identifica requisitos
+        # eliminatórios separadamente. Portanto, não inventamos gaps.
+        eliminatory_gaps: list[str] = []
+
         recommendation = self._recommend(
             fit_score,
             eliminatory_gaps,
@@ -151,72 +142,49 @@ class QualificationAgent:
                     f"{len(missing)} requisito(s) "
                     "técnico(s) não identificado(s)."
                 ),
-                (
-                    "Compatibilidade de responsabilidades: "
-                    f"{round(responsibilities_score, 2)}/10."
-                ),
                 f"Fit calculado: {fit_score}/10.",
             ],
         )
 
-    def _score_responsibilities(
+    def _normalize_text(
         self,
-        job: JobOpportunity,
-        profile: MasterProfile,
-    ) -> float:
-        """Avalia responsabilidades sem depender da nota técnica."""
+        value: str,
+    ) -> str:
+        """Normaliza textos para comparação consistente."""
 
-        if not job.description.strip():
+        return value.strip().casefold()
+
+    def _score_technical(
+        self,
+        matched: list[str],
+        requirements: set[str],
+    ) -> float:
+        """Calcula aderência técnica entre 0 e 10."""
+
+        if not requirements:
             return 5.0
 
-        if not profile.experience:
-            return 0.0
-
-        description = job.description.casefold()
-
-        candidate_responsibilities = {
-            responsibility.casefold()
-            for experience in profile.experience
-            for responsibility in experience.responsibilities
-        }
-
-        matched_responsibilities = {
-            responsibility
-            for responsibility in candidate_responsibilities
-            if responsibility in description
-        }
-
-        if len(matched_responsibilities) >= 4:
-            return 10.0
-
-        if len(matched_responsibilities) == 3:
-            return 8.0
-
-        if len(matched_responsibilities) == 2:
-            return 6.0
-
-        if len(matched_responsibilities) == 1:
-            return 4.0
-
-        return 0.0
+        return (
+            len(matched)
+            / len(requirements)
+        ) * 10
 
     def _score_seniority(
         self,
         job: JobOpportunity,
         profile: MasterProfile,
     ) -> float:
-        title = job.title.casefold()
-
-        if (
-            "sênior" in title
-            or "senior" in title
-        ):
-            return 2.0
+        title = self._normalize_text(
+            job.title
+        )
 
         for seniority in (
             profile.candidate.career_target.seniority
         ):
-            if seniority.casefold() in title:
+            if (
+                self._normalize_text(seniority)
+                in title
+            ):
                 return 10.0
 
         if (
@@ -254,9 +222,15 @@ class QualificationAgent:
         ):
             return 10.0
 
+        normalized_job_location = (
+            self._normalize_text(
+                job.location
+            )
+        )
+
         if any(
-            location.lower()
-            in job.location.lower()
+            self._normalize_text(location)
+            in normalized_job_location
             for location
             in preferences.preferred_location
         ):
@@ -264,53 +238,16 @@ class QualificationAgent:
 
         return 4.0
 
-    def _detect_eliminatory_gaps(
-        self,
-        job: JobOpportunity,
-        profile: MasterProfile,
-    ) -> list[str]:
-        """Identifica incompatibilidades que bloqueiam recomendação."""
-
-        gaps: list[str] = []
-
-        title = job.title.casefold()
-
-        candidate_seniority = {
-            seniority.casefold()
-            for seniority
-            in profile.candidate.career_target.seniority
-        }
-
-        senior_role = (
-            "sênior" in title
-            or "senior" in title
-        )
-
-        candidate_targets_senior = (
-            "sênior" in candidate_seniority
-            or "senior" in candidate_seniority
-        )
-
-        if (
-            senior_role
-            and not candidate_targets_senior
-        ):
-            gaps.append(
-                "SENIORIDADE_INCOMPATIVEL"
-            )
-
-        return gaps
-
     def _recommend(
         self,
         fit_score: float,
         eliminatory_gaps: list[str] | None = None,
     ) -> str:
-        """Define a recomendação considerando fit e lacunas eliminatórias."""
+        """Define a fila da vaga conforme fit e gaps eliminatórios."""
 
-        eliminatory_gaps = eliminatory_gaps or []
+        gaps = eliminatory_gaps or []
 
-        if eliminatory_gaps:
+        if gaps:
             return "NAO_RECOMENDADA"
 
         if fit_score >= 7.0:
