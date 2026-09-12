@@ -186,3 +186,34 @@ def test_qualification_agent_scores_remote_preference():
     )
 
     assert result == 10.0
+
+
+def test_qualification_agent_scores_responsibilities_independently():
+    profile = MemoryAgent().load_profile()
+
+    job = JobOpportunity(
+        job_id="vaga-fit-responsibilities-001",
+        title="Analista de Dados Júnior",
+        company="Empresa Teste",
+        source="TESTE",
+        location="São Paulo",
+        work_model=WorkModel.HYBRID,
+        employment_type="CLT",
+        requirements=[
+            "Power BI",
+            "SQL",
+        ],
+        description=(
+            "Responsável por análise de dados, "
+            "desenvolvimento de dashboards, KPIs "
+            "e tratamento de dados."
+        ),
+    )
+
+    result = QualificationAgent().calculate_fit(
+        job,
+        profile,
+    )
+
+    assert result.breakdown.technical_skills == 10.0
+    assert 0 <= result.breakdown.responsibilities <= 10.0
