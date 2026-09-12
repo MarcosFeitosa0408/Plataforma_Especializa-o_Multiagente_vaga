@@ -1,5 +1,5 @@
-from core.schemas.job import JobOpportunity
 from core.schemas.candidate import MasterProfile
+from core.schemas.job import JobOpportunity
 from core.schemas.qualification import (
     QualificationBreakdown,
     QualificationResult,
@@ -40,8 +40,12 @@ class QualificationAgent:
             for requirement in job.requirements
         }
 
-        matched = sorted(candidate_skills & job_requirements)
-        missing = sorted(job_requirements - candidate_skills)
+        matched = sorted(
+            candidate_skills & job_requirements
+        )
+        missing = sorted(
+            job_requirements - candidate_skills
+        )
 
         if job_requirements:
             technical_score = (
@@ -50,27 +54,63 @@ class QualificationAgent:
         else:
             technical_score = 5.0
 
-        experience_score = 7.0 if profile.experience else 0.0
-        responsibilities_score = self._score_responsibilities(
-             job,
-             profile,
+        experience_score = (
+            7.0
+            if profile.experience
+            else 0.0
         )
-        seniority_score = self._score_seniority(job, profile)
-        location_score = self._score_location(job, profile)
-        ats_score = technical_score
 
-        eliminatory_gaps = self._detect_eliminatory_gaps(
+        responsibilities_score = (
+            self._score_responsibilities(
+                job,
+                profile,
+            )
+        )
+
+        seniority_score = self._score_seniority(
             job,
             profile,
         )
 
+        location_score = self._score_location(
+            job,
+            profile,
+        )
+
+        ats_score = technical_score
+
+        eliminatory_gaps = (
+            self._detect_eliminatory_gaps(
+                job,
+                profile,
+            )
+        )
+
         breakdown = QualificationBreakdown(
-            technical_skills=round(technical_score, 2),
-            professional_experience=round(experience_score, 2),
-            responsibilities=round(responsibilities_score, 2),
-            seniority=round(seniority_score, 2),
-            location_work_model=round(location_score, 2),
-            ats_compatibility=round(ats_score, 2),
+            technical_skills=round(
+                technical_score,
+                2,
+            ),
+            professional_experience=round(
+                experience_score,
+                2,
+            ),
+            responsibilities=round(
+                responsibilities_score,
+                2,
+            ),
+            seniority=round(
+                seniority_score,
+                2,
+            ),
+            location_work_model=round(
+                location_score,
+                2,
+            ),
+            ats_compatibility=round(
+                ats_score,
+                2,
+            ),
         )
 
         fit_score = round(
@@ -94,19 +134,6 @@ class QualificationAgent:
             eliminatory_gaps,
         )
 
-        reasoning = [
-            f"{len(matched)} requisito(s) técnico(s) compatível(is).",
-            f"{len(missing)} requisito(s) técnico(s) não identificado(s).",
-            f"Fit calculado: {fit_score}/10.",
-        ]
-
-        if eliminatory_gaps:
-            reasoning.append(
-                "Gap eliminatório identificado: "
-                + ", ".join(eliminatory_gaps)
-                + "."
-            )
-
         return QualificationResult(
             job_id=job.job_id,
             fit_score=fit_score,
@@ -115,7 +142,21 @@ class QualificationAgent:
             missing_skills=missing,
             eliminatory_gaps=eliminatory_gaps,
             breakdown=breakdown,
-            reasoning=reasoning,
+            reasoning=[
+                (
+                    f"{len(matched)} requisito(s) "
+                    "técnico(s) compatível(is)."
+                ),
+                (
+                    f"{len(missing)} requisito(s) "
+                    "técnico(s) não identificado(s)."
+                ),
+                (
+                    "Compatibilidade de responsabilidades: "
+                    f"{round(responsibilities_score, 2)}/10."
+                ),
+                f"Fit calculado: {fit_score}/10.",
+            ],
         )
 
     def _score_responsibilities(
@@ -123,54 +164,65 @@ class QualificationAgent:
         job: JobOpportunity,
         profile: MasterProfile,
     ) -> float:
-        """Compara atividades da vaga com responsabilidades já exercidas."""
+        """Avalia responsabilidades sem depender da nota técnica."""
 
-        job_text = " ".join(
-            [
-                job.title,
-                job.description,
-                *job.requirements,
-                *job.desirable_requirements,
-            ]
-        ).lower()
+        if not job.description.strip():
+            return 5.0
+
+        if not profile.experience:
+            return 0.0
+
+        description = job.description.casefold()
 
         candidate_responsibilities = {
-            responsibility.lower()
+            responsibility.casefold()
             for experience in profile.experience
             for responsibility in experience.responsibilities
         }
 
-        if not candidate_responsibilities:
-            return 0.0
-
-        matched_responsibilities = [
+        matched_responsibilities = {
             responsibility
             for responsibility in candidate_responsibilities
-            if responsibility in job_text
-        ]
+            if responsibility in description
+        }
 
-        if not matched_responsibilities:
-            return 0.0
+        if len(matched_responsibilities) >= 4:
+            return 10.0
 
-        score = (
-            len(matched_responsibilities)
-            / len(candidate_responsibilities)
-        ) * 10
+        if len(matched_responsibilities) == 3:
+            return 8.0
 
-        return min(score, 10.0)
+        if len(matched_responsibilities) == 2:
+            return 6.0
+
+        if len(matched_responsibilities) == 1:
+            return 4.0
+
+        return 0.0
 
     def _score_seniority(
         self,
         job: JobOpportunity,
         profile: MasterProfile,
     ) -> float:
-        title = job.title.lower()
+        title = job.title.casefold()
 
-        for seniority in profile.candidate.career_target.seniority:
-            if seniority.lower() in title:
+        if (
+            "sênior" in title
+            or "senior" in title
+        ):
+            return 2.0
+
+        for seniority in (
+            profile.candidate.career_target.seniority
+        ):
+            if seniority.casefold() in title:
                 return 10.0
 
-        if "júnior" in title or "junior" in title:
+        if (
+            "júnior" in title
+            or "junior" in title
+        ):
             return 10.0
 
         return 5.0
@@ -180,20 +232,33 @@ class QualificationAgent:
         job: JobOpportunity,
         profile: MasterProfile,
     ) -> float:
-        preferences = profile.candidate.work_preferences
+        preferences = (
+            profile.candidate.work_preferences
+        )
 
-        if job.work_model.value == "REMOTE" and preferences.remote:
+        if (
+            job.work_model.value == "REMOTE"
+            and preferences.remote
+        ):
             return 10.0
 
-        if job.work_model.value == "HYBRID" and preferences.hybrid:
+        if (
+            job.work_model.value == "HYBRID"
+            and preferences.hybrid
+        ):
             return 10.0
 
-        if job.work_model.value == "ONSITE" and preferences.onsite:
+        if (
+            job.work_model.value == "ONSITE"
+            and preferences.onsite
+        ):
             return 10.0
 
         if any(
-            location.lower() in job.location.lower()
-            for location in preferences.preferred_location
+            location.lower()
+            in job.location.lower()
+            for location
+            in preferences.preferred_location
         ):
             return 8.0
 
@@ -204,33 +269,43 @@ class QualificationAgent:
         job: JobOpportunity,
         profile: MasterProfile,
     ) -> list[str]:
+        """Identifica incompatibilidades que bloqueiam recomendação."""
+
         gaps: list[str] = []
 
-        title = job.title.lower()
+        title = job.title.casefold()
+
+        candidate_seniority = {
+            seniority.casefold()
+            for seniority
+            in profile.candidate.career_target.seniority
+        }
 
         senior_role = (
             "sênior" in title
             or "senior" in title
         )
 
-        candidate_targets_senior = any(
-            "sênior" in seniority.lower()
-            or "senior" in seniority.lower()
-            for seniority in profile.candidate.career_target.seniority
+        candidate_targets_senior = (
+            "sênior" in candidate_seniority
+            or "senior" in candidate_seniority
         )
 
-        if senior_role and not candidate_targets_senior:
-            gaps.append("SENIORIDADE_INCOMPATIVEL")
+        if (
+            senior_role
+            and not candidate_targets_senior
+        ):
+            gaps.append(
+                "SENIORIDADE_INCOMPATIVEL"
+            )
 
         return gaps
 
     def _recommend(
         self,
         fit_score: float,
-        eliminatory_gaps: list[str] | None = None,
+        eliminatory_gaps: list[str],
     ) -> str:
-        eliminatory_gaps = eliminatory_gaps or []
-
         if eliminatory_gaps:
             return "NAO_RECOMENDADA"
 
