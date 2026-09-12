@@ -96,21 +96,19 @@ def test_qualification_agent_recommendation_thresholds():
     assert agent._recommend(7.0, []) == "FILA_PRINCIPAL"
     assert agent._recommend(6.5, []) == "FILA_SECUNDARIA"
     assert agent._recommend(6.9, []) == "FILA_SECUNDARIA"
-    agent._recommend(6.5)
-    agent._recommend(6.9)
-    agent._recommend(6.49)
+    assert agent._recommend(6.49, []) == "NAO_RECOMENDADA"
 
 
-def test_qualification_agent_uses_secondary_queue_for_medium_fit():
+ddef test_qualification_agent_uses_secondary_queue_for_medium_fit():
     agent = QualificationAgent()
 
     assert (
-        agent._recommend(6.5)
+        agent._recommend(6.5, [])
         == "FILA_SECUNDARIA"
     )
 
     assert (
-        agent._recommend(6.9)
+        agent._recommend(6.9, [])
         == "FILA_SECUNDARIA"
     )
 
@@ -141,7 +139,7 @@ def test_qualification_agent_rejects_score_below_secondary_queue():
     agent = QualificationAgent()
 
     assert (
-        agent._recommend(6.49)
+        agent._recommend(6.49, [])
         == "NAO_RECOMENDADA"
     )
 
