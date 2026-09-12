@@ -1,12 +1,6 @@
+from pydantic import Field
+
 from core.schemas.job import StrictModel
-
-from core.schemas.qualification import QualificationResult
-
-
-class StrictModel(BaseModel):
-    """Modelo base que rejeita campos não previstos."""
-
-    model_config = ConfigDict(extra="forbid")
 
 
 class QualificationBreakdown(StrictModel):
