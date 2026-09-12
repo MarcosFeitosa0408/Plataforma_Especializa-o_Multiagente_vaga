@@ -215,3 +215,14 @@ def test_qualification_agent_scores_responsibilities_independently():
 
     assert result.breakdown.technical_skills == 10.0
     assert 0 <= result.breakdown.responsibilities <= 10.0
+
+
+def test_qualification_agent_does_not_use_secondary_queue_with_eliminatory_gap():
+    agent = QualificationAgent()
+
+    recommendation = agent._recommend(
+        6.5,
+        ["Requisito eliminatório não atendido"],
+    )
+
+    assert recommendation == "NAO_RECOMENDADA"
