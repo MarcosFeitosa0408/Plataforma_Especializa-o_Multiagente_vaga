@@ -99,7 +99,7 @@ def test_qualification_agent_recommendation_thresholds():
     assert agent._recommend(6.49, []) == "NAO_RECOMENDADA"
 
 
-ddef test_qualification_agent_uses_secondary_queue_for_medium_fit():
+def test_qualification_agent_uses_secondary_queue_for_medium_fit():
     agent = QualificationAgent()
 
     assert (
