@@ -238,22 +238,18 @@ class QualificationAgent:
 
         return 4.0
 
-    def _recommend(
-        self,
-        fit_score: float,
-        eliminatory_gaps: list[str] | None = None,
-    ) -> str:
-        """Define a fila da vaga conforme fit e gaps eliminatórios."""
-
-        gaps = eliminatory_gaps or []
-
-        if gaps:
-            return "NAO_RECOMENDADA"
-
-        if fit_score >= 7.0:
-            return "RECOMENDADA"
-
-        if fit_score >= 6.5:
-            return "FILA_SECUNDARIA"
-
+def _recommend(
+    self,
+    fit_score: float,
+    eliminatory_gaps: list[str],
+) -> str:
+    if eliminatory_gaps:
         return "NAO_RECOMENDADA"
+
+    if fit_score >= 7.0:
+        return "FILA_PRINCIPAL"
+
+    if fit_score >= 6.5:
+        return "FILA_SECUNDARIA"
+
+    return "NAO_RECOMENDADA"
