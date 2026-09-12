@@ -103,7 +103,7 @@ def test_qualification_agent_detects_senior_role_as_gap():
     profile = MemoryAgent().load_profile()
 
     job = JobOpportunity(
-        job_id="vaga-fit-003",
+        job_id="vaga-fit-004",
         title="Analista de Dados Sênior",
         company="Empresa Teste",
         source="TESTE",
