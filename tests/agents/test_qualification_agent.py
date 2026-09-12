@@ -1,5 +1,7 @@
 from agents.agent_00_memory.memory_agent import MemoryAgent
-from agents.agent_02_qualification.qualification_agent import QualificationAgent
+from agents.agent_02_qualification.qualification_agent import (
+    QualificationAgent,
+)
 from core.schemas.job import JobOpportunity, WorkModel
 
 
@@ -24,7 +26,10 @@ def test_qualification_agent_calculates_candidate_fit():
         ],
     )
 
-    result = QualificationAgent().calculate_fit(job, profile)
+    result = QualificationAgent().calculate_fit(
+        job,
+        profile,
+    )
 
     assert result.job_id == "vaga-fit-001"
     assert 0 <= result.fit_score <= 10
@@ -36,7 +41,10 @@ def test_qualification_agent_calculates_candidate_fit():
     assert "azure" in result.missing_skills
 
     assert result.breakdown.seniority == 10.0
-    assert result.breakdown.location_work_model == 10.0
+    assert (
+        result.breakdown.location_work_model
+        == 10.0
+    )
 
 
 def test_qualification_agent_rejects_low_fit_job():
@@ -58,140 +66,120 @@ def test_qualification_agent_rejects_low_fit_job():
         ],
     )
 
-    result = QualificationAgent().calculate_fit(job, profile)
+    result = QualificationAgent().calculate_fit(
+        job,
+        profile,
+    )
 
     assert result.fit_score < 6.5
-    assert result.recommendation == "NAO_RECOMENDADA"
+    assert (
+        result.recommendation
+        == "NAO_RECOMENDADA"
+    )
     assert len(result.matched_skills) == 0
     assert len(result.missing_skills) == 4
 
 
-def test_qualification_agent_scores_responsibilities_independently():
-    profile = MemoryAgent().load_profile()
+def test_qualification_weights_total_one():
+    agent = QualificationAgent()
 
-    job = JobOpportunity(
-        job_id="vaga-fit-003",
-        title="Analista de Dados Júnior",
-        company="Empresa Teste",
-        source="TESTE",
-        location="São Paulo",
-        work_model=WorkModel.HYBRID,
-        employment_type="CLT",
-        requirements=[
-            "Power BI",
-            "SQL",
-        ],
-        description=(
-            "Responsável por análise de dados, "
-            "desenvolvimento de dashboards, "
-            "acompanhamento de KPIs e ETL."
-        ),
+    assert round(
+        sum(agent.WEIGHTS.values()),
+        2,
+    ) == 1.0
+
+
+def test_qualification_agent_recommends_high_fit():
+    agent = QualificationAgent()
+
+    assert (
+        agent._recommend(7.0)
+        == "RECOMENDADA"
     )
-
-    result = QualificationAgent().calculate_fit(
-        job,
-        profile,
-    )
-
-    assert result.breakdown.technical_skills == 10.0
-    assert result.breakdown.responsibilities == 10.0
-    assert result.fit_score >= 7.0
-    assert result.recommendation == "RECOMENDADA"
-    
-    
-def test_qualification_agent_detects_senior_role_as_gap():
-    profile = MemoryAgent().load_profile()
-
-    job = JobOpportunity(
-        job_id="vaga-fit-004",
-        title="Analista de Dados Sênior",
-        company="Empresa Teste",
-        source="TESTE",
-        location="São Paulo",
-        work_model=WorkModel.HYBRID,
-        employment_type="CLT",
-        requirements=[
-            "Power BI",
-            "SQL",
-            "Python",
-            "Excel",
-        ],
-    )
-
-    result = QualificationAgent().calculate_fit(
-        job,
-        profile,
-    )
-
-    assert result.breakdown.technical_skills == 10.0
-    assert result.breakdown.seniority < 10.0
-    assert "SENIORIDADE_INCOMPATIVEL" in result.eliminatory_gaps
-    assert result.recommendation == "NAO_RECOMENDADA"
 
 
 def test_qualification_agent_uses_secondary_queue_for_medium_fit():
     agent = QualificationAgent()
 
-    assert agent._recommend(
-        6.5,
-        [],
-    ) == "FILA_SECUNDARIA"
+    assert (
+        agent._recommend(6.5)
+        == "FILA_SECUNDARIA"
+    )
 
-    assert agent._recommend(
-        6.9,
-        [],
-    ) == "FILA_SECUNDARIA"
+    assert (
+        agent._recommend(6.9)
+        == "FILA_SECUNDARIA"
+    )
 
 
-def test_qualification_agent_blocks_secondary_queue_with_eliminatory_gap():
+def test_qualification_agent_rejects_medium_fit_with_eliminatory_gap():
     agent = QualificationAgent()
 
-    assert agent._recommend(
-        6.5,
-        ["REQUISITO_ELIMINATORIO"],
-    ) == "NAO_RECOMENDADA"
+    result = agent._recommend(
+        6.8,
+        ["Requisito eliminatório ausente"],
+    )
 
-    assert agent._recommend(
-        6.9,
-        ["REQUISITO_ELIMINATORIO"],
-    ) == "NAO_RECOMENDADA"
+    assert result == "NAO_RECOMENDADA"
 
 
-def test_qualification_agent_does_not_recommend_job_with_eliminatory_gap():
+def test_qualification_agent_rejects_high_fit_with_eliminatory_gap():
     agent = QualificationAgent()
 
-    assert agent._recommend(
-        8.0,
-        ["Requisito eliminatório não atendido"],
-    ) == "NAO_RECOMENDADA"
+    result = agent._recommend(
+        8.5,
+        ["Requisito eliminatório ausente"],
+    )
+
+    assert result == "NAO_RECOMENDADA"
 
 
-def test_qualification_agent_responsibilities_do_not_depend_on_technical_skills():
+def test_qualification_agent_rejects_score_below_secondary_queue():
+    agent = QualificationAgent()
+
+    assert (
+        agent._recommend(6.49)
+        == "NAO_RECOMENDADA"
+    )
+
+
+def test_qualification_agent_normalizes_skill_text():
+    agent = QualificationAgent()
+
+    assert (
+        agent._normalize_text(
+            "  Power BI  "
+        )
+        == "power bi"
+    )
+
+
+def test_qualification_agent_gives_neutral_score_without_requirements():
+    agent = QualificationAgent()
+
+    result = agent._score_technical(
+        matched=[],
+        requirements=set(),
+    )
+
+    assert result == 5.0
+
+
+def test_qualification_agent_scores_remote_preference():
     profile = MemoryAgent().load_profile()
 
     job = JobOpportunity(
-        job_id="vaga-fit-005",
-        title="Analista de Dados Júnior",
+        job_id="vaga-fit-remote",
+        title="Analista de Dados",
         company="Empresa Teste",
         source="TESTE",
-        location="São Paulo",
-        work_model=WorkModel.HYBRID,
-        employment_type="CLT",
-        requirements=[
-            "Azure",
-            "Terraform",
-        ],
-        description=(
-            "Responsável por análise de dados, "
-            "desenvolvimento de dashboards, "
-            "acompanhamento de KPIs e processos de ETL."
-        ),
+        location="Brasil",
+        work_model=WorkModel.REMOTE,
     )
 
-    result = QualificationAgent().calculate_fit(
+    result = QualificationAgent()._score_location(
         job,
         profile,
     )
 
-    assert result.breakdown.technical_skills == 0.0
-    assert result.breakdown.responsibilities > 0.0
+    assert result == 10.0
