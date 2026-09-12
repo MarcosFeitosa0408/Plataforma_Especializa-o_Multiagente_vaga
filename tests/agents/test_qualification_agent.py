@@ -164,3 +164,34 @@ def test_qualification_agent_does_not_recommend_job_with_eliminatory_gap():
         8.0,
         ["Requisito eliminatório não atendido"],
     ) == "NAO_RECOMENDADA"
+
+
+def test_qualification_agent_responsibilities_do_not_depend_on_technical_skills():
+    profile = MemoryAgent().load_profile()
+
+    job = JobOpportunity(
+        job_id="vaga-fit-005",
+        title="Analista de Dados Júnior",
+        company="Empresa Teste",
+        source="TESTE",
+        location="São Paulo",
+        work_model=WorkModel.HYBRID,
+        employment_type="CLT",
+        requirements=[
+            "Azure",
+            "Terraform",
+        ],
+        description=(
+            "Responsável por análise de dados, "
+            "desenvolvimento de dashboards, "
+            "acompanhamento de KPIs e processos de ETL."
+        ),
+    )
+
+    result = QualificationAgent().calculate_fit(
+        job,
+        profile,
+    )
+
+    assert result.breakdown.technical_skills == 0.0
+    assert result.breakdown.responsibilities > 0.0
