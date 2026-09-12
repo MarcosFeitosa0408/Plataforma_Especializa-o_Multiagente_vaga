@@ -51,7 +51,10 @@ class QualificationAgent:
             technical_score = 5.0
 
         experience_score = 7.0 if profile.experience else 0.0
-        responsibilities_score = technical_score
+        responsibilities_score = self._score_responsibilities(
+             job,
+             profile,
+        )
         seniority_score = self._score_seniority(job, profile)
         location_score = self._score_location(job, profile)
         ats_score = technical_score
@@ -114,6 +117,47 @@ class QualificationAgent:
             breakdown=breakdown,
             reasoning=reasoning,
         )
+
+    def _score_responsibilities(
+        self,
+        job: JobOpportunity,
+        profile: MasterProfile,
+    ) -> float:
+        """Compara atividades da vaga com responsabilidades já exercidas."""
+
+        job_text = " ".join(
+            [
+                job.title,
+                job.description,
+                *job.requirements,
+                *job.desirable_requirements,
+            ]
+        ).lower()
+
+        candidate_responsibilities = {
+            responsibility.lower()
+            for experience in profile.experience
+            for responsibility in experience.responsibilities
+        }
+
+        if not candidate_responsibilities:
+            return 0.0
+
+        matched_responsibilities = [
+            responsibility
+            for responsibility in candidate_responsibilities
+            if responsibility in job_text
+        ]
+
+        if not matched_responsibilities:
+            return 0.0
+
+        score = (
+            len(matched_responsibilities)
+            / len(candidate_responsibilities)
+        ) * 10
+
+        return min(score, 10.0)
 
     def _score_seniority(
         self,
