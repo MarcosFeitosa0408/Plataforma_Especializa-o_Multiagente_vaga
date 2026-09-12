@@ -89,13 +89,15 @@ def test_qualification_weights_total_one():
     ) == 1.0
 
 
-def test_qualification_agent_recommends_high_fit():
+def test_qualification_agent_recommendation_thresholds():
     agent = QualificationAgent()
 
-    assert (
-        agent._recommend(7.0)
-        == "RECOMENDADA"
-    )
+    assert agent._recommend(8.5, []) == "FILA_PRINCIPAL"
+    assert agent._recommend(7.0, []) == "FILA_PRINCIPAL"
+    assert agent._recommend(6.5, []) == "FILA_SECUNDARIA"
+    assert agent._recommend(6.9, []) == "FILA_SECUNDARIA"
+    assert agent._recommend(6.4, []) == "DESCARTAR"
+    assert agent._recommend(3.0, []) == "DESCARTAR"
 
 
 def test_qualification_agent_uses_secondary_queue_for_medium_fit():
