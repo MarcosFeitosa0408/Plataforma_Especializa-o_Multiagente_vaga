@@ -257,3 +257,4 @@ class QualificationAgent:
             return "FILA_SECUNDARIA"
 
         return "NAO_RECOMENDADA"
+        
