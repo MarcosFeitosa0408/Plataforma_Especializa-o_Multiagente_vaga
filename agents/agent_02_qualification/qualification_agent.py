@@ -180,7 +180,7 @@ class QualificationAgent:
 
         return gaps
 
-      def _recommend(
+def _recommend(
     self,
     fit_score: float,
     eliminatory_gaps: list[str] | None = None,
