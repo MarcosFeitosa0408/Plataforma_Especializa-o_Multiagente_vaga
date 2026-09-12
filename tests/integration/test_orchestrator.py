@@ -43,7 +43,7 @@ def test_orchestrator_runs_full_pipeline_and_sorts_by_fit():
     assert results[0].fit_score >= results[1].fit_score
     assert results[1].fit_score >= results[2].fit_score
 
-    assert results[0].recommendation == "RECOMENDADA"
+    assert results[0].recommendation == "FILA_PRINCIPAL"
     assert results[2].recommendation == "NAO_RECOMENDADA"
 
     assert results[2].job_id == "vaga-003"
