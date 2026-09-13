@@ -271,3 +271,23 @@ def test_qualification_agent_scores_responsibilities_from_job_description():
         result.breakdown.responsibilities
         > result.breakdown.technical_skills
     )
+
+
+def test_qualification_agent_rejects_secondary_queue_with_eliminatory_gap():
+    agent = QualificationAgent()
+
+    assert (
+        agent._recommend(
+            6.5,
+            ["REQUISITO_ELIMINATORIO"],
+        )
+        == "NAO_RECOMENDADA"
+    )
+
+    assert (
+        agent._recommend(
+            6.9,
+            ["REQUISITO_ELIMINATORIO"],
+        )
+        == "NAO_RECOMENDADA"
+    )
