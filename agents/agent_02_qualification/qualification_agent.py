@@ -1,5 +1,5 @@
-from core.schemas.job import JobOpportunity
 from core.schemas.candidate import MasterProfile
+from core.schemas.job import JobOpportunity
 from core.schemas.qualification import (
     QualificationBreakdown,
     QualificationResult,
@@ -145,10 +145,6 @@ class QualificationAgent:
                     f"{len(missing)} requisito(s) "
                     "técnico(s) não identificado(s)."
                 ),
-                (
-                    "Compatibilidade com responsabilidades: "
-                    f"{round(responsibilities_score, 2)}/10."
-                ),
                 f"Fit calculado: {fit_score}/10.",
             ],
         )
@@ -157,16 +153,18 @@ class QualificationAgent:
         self,
         value: str,
     ) -> str:
-        """Normaliza textos usados nas comparações."""
+        """Normaliza textos utilizados nas comparações."""
 
-        return value.strip().casefold()
+        return " ".join(
+            value.strip().casefold().split()
+        )
 
     def _score_technical(
         self,
         matched: list[str],
         requirements: set[str],
     ) -> float:
-        """Calcula compatibilidade dos requisitos técnicos."""
+        """Calcula aderência aos requisitos técnicos."""
 
         if not requirements:
             return 5.0
@@ -183,18 +181,25 @@ class QualificationAgent:
     ) -> float:
         """Compara responsabilidades reais com a descrição da vaga."""
 
+        if not job.description.strip():
+            return 5.0
+
         description = self._normalize_text(
             job.description
         )
 
-        if not description:
-            return 5.0
+        candidate_responsibilities: set[str] = set()
 
-        candidate_responsibilities = {
-            self._normalize_text(responsibility)
-            for experience in profile.experience
-            for responsibility in experience.responsibilities
-        }
+        for experience in profile.experience:
+            for responsibility in experience.responsibilities:
+                normalized = self._normalize_text(
+                    responsibility
+                )
+
+                if normalized:
+                    candidate_responsibilities.add(
+                        normalized
+                    )
 
         if not candidate_responsibilities:
             return 0.0
@@ -205,17 +210,14 @@ class QualificationAgent:
             if responsibility in description
         ]
 
-        if not matched_responsibilities:
-            return 0.0
-
-        return min(
-            (
-                len(matched_responsibilities)
-                / len(candidate_responsibilities)
+        if matched_responsibilities:
+            return min(
+                10.0,
+                5.0
+                + len(matched_responsibilities),
             )
-            * 10,
-            10.0,
-        )
+
+        return 0.0
 
     def _score_seniority(
         self,
@@ -270,9 +272,13 @@ class QualificationAgent:
         ):
             return 10.0
 
+        job_location = self._normalize_text(
+            job.location
+        )
+
         if any(
             self._normalize_text(location)
-            in self._normalize_text(job.location)
+            in job_location
             for location
             in preferences.preferred_location
         ):
@@ -285,11 +291,15 @@ class QualificationAgent:
         fit_score: float,
         eliminatory_gaps: list[str] | None = None,
     ) -> str:
-        if eliminatory_gaps:
+        """Define a recomendação considerando score e lacunas eliminatórias."""
+
+        gaps = eliminatory_gaps or []
+
+        if gaps:
             return "NAO_RECOMENDADA"
 
         if fit_score >= 7.0:
-            return "FILA_PRINCIPAL"
+            return "RECOMENDADA"
 
         if fit_score >= 6.5:
             return "FILA_SECUNDARIA"
