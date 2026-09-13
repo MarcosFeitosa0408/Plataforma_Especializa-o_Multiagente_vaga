@@ -285,15 +285,15 @@ class QualificationAgent:
         fit_score: float,
         eliminatory_gaps: list[str] | None = None,
     ) -> str:
-        gaps = eliminatory_gaps or []
+        eliminatory_gaps = eliminatory_gaps or []
+
+        if eliminatory_gaps:
+            return "NAO_RECOMENDADA"
 
         if fit_score >= 7.0:
             return "RECOMENDADA"
 
         if fit_score >= 6.5:
-            if gaps:
-                return "NAO_RECOMENDADA"
-
             return "FILA_SECUNDARIA"
 
         return "NAO_RECOMENDADA"
