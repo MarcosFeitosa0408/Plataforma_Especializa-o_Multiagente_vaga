@@ -237,3 +237,37 @@ def test_qualification_agent_blocks_secondary_queue_with_eliminatory_gap():
     )
 
     assert recommendation == "NAO_RECOMENDADA"
+
+
+def test_qualification_agent_scores_responsibilities_from_job_description():
+    profile = MemoryAgent().load_profile()
+
+    job = JobOpportunity(
+        job_id="vaga-fit-responsibilities-002",
+        title="Analista de Dados Júnior",
+        company="Empresa Teste",
+        source="TESTE",
+        location="São Paulo",
+        work_model=WorkModel.HYBRID,
+        employment_type="CLT",
+        requirements=[
+            "Tecnologia Não Dominada",
+        ],
+        description=(
+            "Responsável por análise de dados, "
+            "desenvolvimento de dashboards, "
+            "KPIs, tratamento e transformação de dados."
+        ),
+    )
+
+    result = QualificationAgent().calculate_fit(
+        job,
+        profile,
+    )
+
+    assert result.breakdown.technical_skills == 0.0
+
+    assert (
+        result.breakdown.responsibilities
+        > result.breakdown.technical_skills
+    )
