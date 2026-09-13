@@ -226,3 +226,14 @@ def test_qualification_agent_does_not_use_secondary_queue_with_eliminatory_gap()
     )
 
     assert recommendation == "NAO_RECOMENDADA"
+
+
+def test_qualification_agent_blocks_secondary_queue_with_eliminatory_gap():
+    agent = QualificationAgent()
+
+    recommendation = agent._recommend(
+        6.5,
+        eliminatory_gaps=["REQUISITO_ELIMINATORIO"],
+    )
+
+    assert recommendation == "NAO_RECOMENDADA"
