@@ -283,7 +283,7 @@ class QualificationAgent:
     def _recommend(
         self,
         fit_score: float,
-        eliminatory_gaps: list[str],
+        eliminatory_gaps: list[str], 
     ) -> str:
         if eliminatory_gaps:
             return "NAO_RECOMENDADA"
