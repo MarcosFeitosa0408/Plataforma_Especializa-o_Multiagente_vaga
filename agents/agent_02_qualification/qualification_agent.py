@@ -173,7 +173,7 @@ class QualificationAgent:
         ) * 10
 
 
-        def _score_responsibilities(
+    def _score_responsibilities( 
         self,
         job: JobOpportunity,
         profile: MasterProfile,
