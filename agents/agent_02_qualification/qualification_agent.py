@@ -299,7 +299,7 @@ class QualificationAgent:
             return "NAO_RECOMENDADA"
 
         if fit_score >= 7.0:
-            return "RECOMENDADA"
+            return "FILA_PRINCIPAL"
 
         if fit_score >= 6.5:
             return "FILA_SECUNDARIA"
