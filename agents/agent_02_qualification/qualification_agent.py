@@ -59,7 +59,10 @@ class QualificationAgent:
             else 0.0
         )
 
-        responsibilities_score = technical_score
+        responsibilities_score = self._score_responsibilities(
+    job,
+    profile,
+)
 
         seniority_score = self._score_seniority(
             job,
@@ -167,6 +170,36 @@ class QualificationAgent:
         return (
             len(matched)
             / len(requirements)
+        ) * 10
+
+
+        def _score_responsibilities(
+        self,
+        job: JobOpportunity,
+        profile: MasterProfile,
+    ) -> float:
+        """Avalia aderência entre a descrição da vaga e atividades comprovadas."""
+
+        job_description = job.description.casefold()
+
+        candidate_responsibilities = {
+            responsibility.casefold()
+            for experience in profile.experience
+            for responsibility in experience.responsibilities
+        }
+
+        if not candidate_responsibilities:
+            return 0.0
+
+        matched_responsibilities = {
+            responsibility
+            for responsibility in candidate_responsibilities
+            if responsibility in job_description
+        }
+
+        return (
+            len(matched_responsibilities)
+            / len(candidate_responsibilities)
         ) * 10
 
     def _score_seniority(
