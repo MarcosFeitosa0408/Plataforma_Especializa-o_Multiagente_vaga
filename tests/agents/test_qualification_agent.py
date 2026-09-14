@@ -367,3 +367,23 @@ def test_qualification_agent_rejects_secondary_fit_with_generic_eliminatory_gap(
         )
         == "NAO_RECOMENDADA"
     )
+
+
+def test_qualification_agent_blocks_secondary_queue_with_eliminatory_gap():
+    agent = QualificationAgent()
+
+    assert (
+        agent._recommend(
+            6.5,
+            ["Requisito eliminatório não atendido"],
+        )
+        == "NAO_RECOMENDADA"
+    )
+
+    assert (
+        agent._recommend(
+            6.9,
+            ["Requisito eliminatório não atendido"],
+        )
+        == "NAO_RECOMENDADA"
+    )
