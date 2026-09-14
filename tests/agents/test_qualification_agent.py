@@ -356,3 +356,15 @@ def test_qualification_agent_rejects_when_any_eliminatory_gap_exists():
     )
 
     assert recommendation == "NAO_RECOMENDADA"
+
+
+def test_qualification_agent_rejects_secondary_fit_with_eliminatory_gap():
+    agent = QualificationAgent()
+
+    assert (
+        agent._recommend(
+            6.9,
+            ["REQUISITO_ELIMINATORIO"],
+        )
+        == "NAO_RECOMENDADA"
+    )
