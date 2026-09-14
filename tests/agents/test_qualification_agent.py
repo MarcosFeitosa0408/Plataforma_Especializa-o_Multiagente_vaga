@@ -322,7 +322,8 @@ def test_qualification_agent_rejects_secondary_queue_with_eliminatory_gap():
         )
         == "NAO_RECOMENDADA"
     )
-    
+
+
 def test_qualification_agent_uses_secondary_queue_without_eliminatory_gaps():
     agent = QualificationAgent()
 
