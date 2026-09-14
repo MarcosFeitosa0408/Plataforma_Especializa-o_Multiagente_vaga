@@ -342,3 +342,17 @@ def test_qualification_agent_rejects_secondary_fit_with_eliminatory_gap():
     )
 
     assert result == "NAO_RECOMENDADA"
+
+
+def test_qualification_agent_rejects_when_any_eliminatory_gap_exists():
+    agent = QualificationAgent()
+
+    recommendation = agent._recommend(
+        6.8,
+        eliminatory_gaps=[
+            "Inglês avançado obrigatório",
+            "Azure não identificado",
+        ],
+    )
+
+    assert recommendation == "NAO_RECOMENDADA"
