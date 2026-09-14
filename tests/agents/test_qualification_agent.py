@@ -124,6 +124,26 @@ def test_qualification_agent_uses_secondary_queue_for_medium_fit():
     )
 
 
+def test_qualification_agent_blocks_secondary_queue_with_eliminatory_gaps():
+    agent = QualificationAgent()
+
+    assert (
+        agent._recommend(
+            6.5,
+            ["requisito eliminatório não atendido"],
+        )
+        == "NAO_RECOMENDADA"
+    )
+
+    assert (
+        agent._recommend(
+            6.9,
+            ["requisito eliminatório não atendido"],
+        )
+        == "NAO_RECOMENDADA"
+    )
+
+
 def test_qualification_agent_rejects_medium_fit_with_eliminatory_gap():
     agent = QualificationAgent()
 
