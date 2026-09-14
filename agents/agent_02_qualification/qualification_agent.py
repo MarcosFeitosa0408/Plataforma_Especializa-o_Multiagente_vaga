@@ -507,7 +507,7 @@ class QualificationAgent:
             return "NAO_RECOMENDADA"
 
         if fit_score >= self.MAIN_QUEUE_THRESHOLD:
-            return "RECOMENDADA"
+            return "FILA_PRINCIPAL"
 
         if fit_score >= self.SECONDARY_QUEUE_THRESHOLD:
             return "FILA_SECUNDARIA"
