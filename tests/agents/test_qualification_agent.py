@@ -259,7 +259,7 @@ def test_qualification_agent_does_not_use_secondary_queue_with_eliminatory_gap()
     assert recommendation == "NAO_RECOMENDADA"
 
 
-def test_qualification_agent_blocks_secondary_queue_with_eliminatory_gap():
+def test_qualification_agent_blocks_secondary_queue_with_named_eliminatory_gap():
     agent = QualificationAgent()
 
     recommendation = agent._recommend(
@@ -323,7 +323,6 @@ def test_qualification_agent_rejects_secondary_queue_with_eliminatory_gap():
         == "NAO_RECOMENDADA"
     )
     
-    
 def test_qualification_agent_uses_secondary_queue_without_eliminatory_gaps():
     agent = QualificationAgent()
 
@@ -358,7 +357,7 @@ def test_qualification_agent_rejects_when_any_eliminatory_gap_exists():
     assert recommendation == "NAO_RECOMENDADA"
 
 
-def test_qualification_agent_rejects_secondary_fit_with_eliminatory_gap():
+def test_qualification_agent_rejects_secondary_fit_with_generic_eliminatory_gap():
     agent = QualificationAgent()
 
     assert (
