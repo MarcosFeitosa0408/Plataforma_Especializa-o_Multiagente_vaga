@@ -78,8 +78,6 @@ class QualificationAgent:
 
         ats_score = technical_score
 
-        eliminatory_gaps: list[str] = []
-
         breakdown = QualificationBreakdown(
             technical_skills=round(
                 technical_score,
