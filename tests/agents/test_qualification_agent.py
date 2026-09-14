@@ -80,6 +80,17 @@ def test_qualification_agent_rejects_low_fit_job():
     assert len(result.missing_skills) == 4
 
 
+def test_qualification_agent_rejects_eliminatory_gap():
+    agent = QualificationAgent()
+
+    recommendation = agent._recommend(
+        8.0,
+        ["alguma lacuna"],
+    )
+
+    assert recommendation == "NAO_RECOMENDADA"
+
+
 def test_qualification_weights_total_one():
     agent = QualificationAgent()
 
