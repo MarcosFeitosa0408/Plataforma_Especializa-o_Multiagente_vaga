@@ -123,6 +123,8 @@ class QualificationAgent:
             2,
         )
 
+        eliminatory_gaps: list[str] = []
+
         recommendation = self._recommend(
             fit_score,
             eliminatory_gaps,
