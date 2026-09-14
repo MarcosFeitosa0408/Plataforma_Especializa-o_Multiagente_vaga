@@ -331,3 +331,14 @@ def test_qualification_agent_uses_secondary_queue_without_eliminatory_gaps():
         6.5,
         [],
     ) == "FILA_SECUNDARIA"
+
+
+def test_qualification_agent_rejects_secondary_fit_with_eliminatory_gap():
+    agent = QualificationAgent()
+
+    result = agent._recommend(
+        6.9,
+        ["Requisito eliminatório não atendido"],
+    )
+
+    assert result == "NAO_RECOMENDADA"
