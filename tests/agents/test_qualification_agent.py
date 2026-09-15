@@ -388,3 +388,31 @@ def test_qualification_agent_blocks_secondary_queue_with_eliminatory_gap():
         )
         == "NAO_RECOMENDADA"
     )
+
+
+def test_desacoplamento_scores_experiencia_e_ats(qualification_agent_instance):
+    # Cenário: Candidato tem as competências técnicas listadas nas 'competencias_tecnicas',
+    # mas suas experiências profissionais anteriores estão vazias ou não citam os termos.
+    # O technical_skills deve ser alto, mas professional_experience deve ser baixo.
+    
+    job_mock = JobOpportunity(
+        id_vaga_origem="123", fonte="Greenhouse", titulo="Dev Python",
+        descricao_bruta="Vaga Python", competencias_obrigatorias=["Python", "FastAPI"],
+        competencias_desejaveis=["Docker"], atividades_responsabilidades=["Desenvolver APIs"]
+    )
+    
+    profile_mock = MasterProfile(
+        nome="Candidato Teste", senioridade_declarada="Pleno",
+        localizacao_preferida="Remoto", modelo_trabalho_preferido="Remoto",
+        competencias_tecnicas=["Python", "FastAPI"],
+        experiencias=[] # Sem histórico profissional para provar o uso
+    )
+    
+    result = qualification_agent_instance.evaluate_opportunity(job_mock, profile_mock)
+    
+    assert result.breakdown.technical_skills > 8.0
+    assert result.breakdown.professional_experience == 0.0  # Desacoplado com sucesso!
+    assert "Compatibilidade ATS calculada por critérios internos" in result.reasoning
+
+
+
