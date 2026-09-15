@@ -1,95 +1,148 @@
-# agents/agent_02_qualification/qualification_agent.py
+from core.schemas.job import JobOpportunity
+from core.schemas.candidate import MasterProfile
+from core.schemas.qualification import (
+    QualificationBreakdown,
+    QualificationResult,
+)
 
-# ... (Manter importações e inicialização da classe intactas)
 
-    def _score_experience(self, job, profile) -> float:
-        """
-        Mede a cobertura dos requisitos obrigatórios da vaga comprovados 
-        dentro das experiências profissionais descritas no perfil.
-        """
-        if not job.competencias_obrigatorias:
+class QualificationAgent:
+    """Calcula a compatibilidade entre candidato e vaga."""
+
+    WEIGHTS = {
+        "technical_skills": 0.35,
+        "professional_experience": 0.20,
+        "responsibilities": 0.15,
+        "seniority": 0.10,
+        "location_work_model": 0.10,
+        "ats_compatibility": 0.10,
+    }
+
+    def calculate_fit(
+        self,
+        job: JobOpportunity,
+        profile: MasterProfile,
+    ) -> QualificationResult:
+        candidate_skills = {
+            skill.lower()
+            for skill in (
+                profile.skills.core
+                + profile.skills.database
+                + profile.skills.python
+                + profile.skills.analytics
+                + profile.skills.tools
+                + profile.skills.automation
+            )
+        }
+
+        job_requirements = {
+            requirement.lower()
+            for requirement in job.requirements
+        }
+
+        matched = sorted(candidate_skills & job_requirements)
+        missing = sorted(job_requirements - candidate_skills)
+
+        if job_requirements:
+            technical_score = (
+                len(matched) / len(job_requirements)
+            ) * 10
+        else:
+            technical_score = 5.0
+
+        experience_score = 7.0 if profile.experience else 0.0
+        responsibilities_score = technical_score
+        seniority_score = self._score_seniority(job, profile)
+        location_score = self._score_location(job, profile)
+        ats_score = technical_score
+
+        breakdown = QualificationBreakdown(
+            technical_skills=round(technical_score, 2),
+            professional_experience=round(experience_score, 2),
+            responsibilities=round(responsibilities_score, 2),
+            seniority=round(seniority_score, 2),
+            location_work_model=round(location_score, 2),
+            ats_compatibility=round(ats_score, 2),
+        )
+
+        fit_score = round(
+            breakdown.technical_skills
+            * self.WEIGHTS["technical_skills"]
+            + breakdown.professional_experience
+            * self.WEIGHTS["professional_experience"]
+            + breakdown.responsibilities
+            * self.WEIGHTS["responsibilities"]
+            + breakdown.seniority
+            * self.WEIGHTS["seniority"]
+            + breakdown.location_work_model
+            * self.WEIGHTS["location_work_model"]
+            + breakdown.ats_compatibility
+            * self.WEIGHTS["ats_compatibility"],
+            2,
+        )
+
+        recommendation = self._recommend(fit_score)
+
+        return QualificationResult(
+            job_id=job.job_id,
+            fit_score=fit_score,
+            recommendation=recommendation,
+            matched_skills=matched,
+            missing_skills=missing,
+            eliminatory_gaps=[],
+            breakdown=breakdown,
+            reasoning=[
+                f"{len(matched)} requisito(s) técnico(s) compatível(is).",
+                f"{len(missing)} requisito(s) técnico(s) não identificado(s).",
+                f"Fit calculado: {fit_score}/10.",
+            ],
+        )
+
+    def _score_seniority(
+        self,
+        job: JobOpportunity,
+        profile: MasterProfile,
+    ) -> float:
+        title = job.title.lower()
+
+        for seniority in profile.candidate.career_target.seniority:
+            if seniority.lower() in title:
+                return 10.0
+
+        if "júnior" in title or "junior" in title:
             return 10.0
-            
-        reqs_obrigatorios = {req.lower() for req in job.competencias_obrigatorias}
-        reqs_comprovados = set()
-        
-        # Varre o histórico profissional em busca de evidências textuais normalizadas
-        for exp in getattr(profile, 'experiencias', []):
-            # Analisa o cargo e o texto descritivo/atividades fornecido pelo schema real
-            texto_experiencia = f"{getattr(exp, 'cargo', '')} { ' '.join(getattr(exp, 'atividades', [])) }".lower()
-            for req in reqs_obrigatorios:
-                if req in texto_experiencia:
-                    reqs_comprovados.add(req)
-                    
-        return round((len(reqs_comprovados) / len(reqs_obrigatorios)) * 10.0, 2)
 
-    def _score_responsibilities(self, job, profile) -> float:
-        """
-        Avalia se os termos de responsabilidades e atribuições da vaga 
-        possuem correspondência determinística normalizada no histórico do candidato.
-        """
-        # Utiliza campos reais existentes em JobOpportunity (ex: descricao_bruta ou atividades_responsabilidades)
-        atividades_vaga = getattr(job, 'atividades_responsabilidades', [])
-        if not atividades_vaga:
-            # Fallback para descricao_bruta caso a lista esteja vazia
-            atividades_vaga = [getattr(job, 'descricao_bruta', '')]
-            
-        texto_vaga_limpo = " ".join(atividades_vaga).lower()
-        if not texto_vaga_limpo.strip():
+        return 5.0
+
+    def _score_location(
+        self,
+        job: JobOpportunity,
+        profile: MasterProfile,
+    ) -> float:
+        preferences = profile.candidate.work_preferences
+
+        if job.work_model.value == "REMOTE" and preferences.remote:
             return 10.0
 
-        # Coleta o bloco textual de evidências do candidato
-        texto_candidato = ""
-        for exp in getattr(profile, 'experiencias', []):
-            texto_candidato += f" {' '.join(getattr(exp, 'atividades', []))}".lower()
+        if job.work_model.value == "HYBRID" and preferences.hybrid:
+            return 10.0
 
-        # Conta termos chaves ou correspondência determinística direta de linhas
-        termos_encontrados = 0
-        total_termos = len(atividades_vaga)
-        
-        for atividade in atividades_vaga:
-            if atividade.lower() in texto_candidato:
-                termos_encontrados += 1
-                
-        if total_termos == 0:
-            return 0.0
-        return round((termos_encontrados / total_termos) * 10.0, 2)
+        if job.work_model.value == "ONSITE" and preferences.onsite:
+            return 10.0
 
-    def _score_ats(self, job, profile) -> float:
-        """
-        Estimativa interna de aderência descritiva.
-        Aplica peso ponderado de 80% para requisitos obrigatórios e 20% para desejáveis.
-        """
-        # Concatena todo o perfil do candidato para buscar correspondências (Anti-Alucinação)
-        texto_completo_perfil = f"{getattr(profile, 'nome', '')} {getattr(profile, 'senioridade_declarada', '')} " \
-                                f"{' '.join(getattr(profile, 'competencias_tecnicas', []))} "
-        for exp in getattr(profile, 'experiencias', []):
-            texto_completo_perfil += f" {getattr(exp, 'cargo', '')} {' '.join(getattr(exp, 'atividades', []))}"
-        texto_completo_perfil = texto_completo_perfil.lower()
+        if any(
+            location.lower() in job.location.lower()
+            for location in preferences.preferred_location
+        ):
+            return 8.0
 
-        # 1. Avaliação dos Obrigatórios (Peso 80%)
-        obrigatorios = getattr(job, 'competencias_obrigatorias', [])
-        score_ob = 10.0
-        if obrigatorios:
-            encontrados_ob = sum(1 for req in obrigatorios if req.lower() in texto_completo_perfil)
-            score_ob = (encontrados_ob / len(obrigatorios)) * 10.0
+        return 4.0
 
-        # 2. Avaliação dos Desejáveis (Peso 20%)
-        desejaveis = getattr(job, 'competencias_desejaveis', [])
-        score_dj = 10.0
-        if desejaveis:
-            encontrados_dj = sum(1 for req in desejaveis if req.lower() in texto_completo_perfil)
-            score_dj = (encontrados_dj / len(desejaveis)) * 10.0
+    def _recommend(self, fit_score: float) -> str:
+        if fit_score >= 7.0:
+            return "RECOMENDADA"
 
-        # Consolidação ponderada 80/20
-        score_ats_final = (score_ob * 0.8) + (score_dj * 0.2)
-        return round(score_ats_final, 2)
+        if fit_score >= 6.5:
+            return "FILA_SECUNDARIA"
 
-# ... (Dentro do método principal de cálculo de score)
-    # Substituir os espelhamentos antigos pelas chamadas isoladas:
-    breakdown.professional_experience = self._score_experience(job, profile)
-    breakdown.responsibilities = self._score_responsibilities(job, profile)
-    breakdown.ats_compatibility = self._score_ats(job, profile)
-
-    # Inserção obrigatória da cláusula explicativa estipulada
-    reasoning_prefix = "Compatibilidade ATS calculada por critérios internos da plataforma como estimativa de aderência descritiva, sem garantia de aprovação em sistemas externos. "
+        return "NAO_RECOMENDADA"
